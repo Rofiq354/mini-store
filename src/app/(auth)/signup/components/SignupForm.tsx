@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { signup } from "@/app/(auth)/auth/action";
+import { signup } from "@/services/auth-action";
 import { SubmitButton } from "../../../../components/SubmitButton";
 import { Label } from "@/components/ui/label";
 

@@ -2,16 +2,15 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Loader2 } from "lucide-react"; // Opsional, pakai icon dari Lucide
+import { Loader2 } from "lucide-react";
 
 export default function LogoutPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Memberikan waktu 3 detik agar user bisa membaca pesan perpisahan
     const timer = setTimeout(() => {
       router.push("/");
-      router.refresh(); // Memastikan state auth terupdate di seluruh aplikasi
+      router.refresh();
     }, 3000);
 
     return () => clearTimeout(timer);

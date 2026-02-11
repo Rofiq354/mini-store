@@ -2,9 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-
-import { createClient } from "../../../utils/supbase/server";
-import { loginSchema, signupSchema } from "../../validation/auth.schema";
+import { createClient } from "@/utils/supbase/server";
+import { loginSchema, signupSchema } from "@/validation/auth.schema";
 
 export async function login(prevState: any, formData: FormData) {
   const supabase = await createClient();
@@ -23,7 +22,7 @@ export async function login(prevState: any, formData: FormData) {
     };
   }
 
-  const { error } = await supabase.auth.signInWithPassword(
+  const { data: authData, error } = await supabase.auth.signInWithPassword(
     validatedFields.data,
   );
 
@@ -33,8 +32,16 @@ export async function login(prevState: any, formData: FormData) {
     };
   }
 
+  const userRole = authData.user?.user_metadata?.role;
+
   revalidatePath("/", "layout");
-  redirect("/");
+
+  // 4. Redirect berdasarkan role
+  if (userRole === "merchant") {
+    redirect("/admin/products");
+  } else {
+    redirect("/");
+  }
 }
 
 export async function signup(prevState: any, formData: FormData) {

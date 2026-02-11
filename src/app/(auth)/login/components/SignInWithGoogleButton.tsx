@@ -2,7 +2,7 @@
 
 import { useState } from "react"; // Tambahkan ini
 import { Button } from "@/components/ui/button";
-import { signInWithGoogle } from "@/app/(auth)/auth/action";
+import { signInWithGoogle } from "@/services/auth-action";
 import { Loader2 } from "lucide-react"; // Ikon loading
 
 const SignInWithGoogleButton = () => {

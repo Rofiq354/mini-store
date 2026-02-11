@@ -9,7 +9,7 @@ import {
   FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { login } from "@/app/(auth)/auth/action";
+import { login } from "@/services/auth-action";
 import Link from "next/link";
 import SignInWithGoogleButton from "./SignInWithGoogleButton";
 import { SubmitButton } from "../../../../components/SubmitButton";

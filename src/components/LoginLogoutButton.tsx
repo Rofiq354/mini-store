@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supbase/client";
-import { signout } from "@/app/(auth)/auth/action";
+import { signout } from "@/services/auth-action";
 
 const LoginButton = () => {
   const [user, setUser] = useState<any>(null);

@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supbase/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { setupShopSchema } from "@/app/validation/auth.schema";
+import { setupShopSchema } from "@/validation/auth.schema";
 
 export async function setupShop(prevState: any, formData: FormData) {
   const supabase = await createClient();
