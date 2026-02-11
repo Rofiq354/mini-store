@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { setupShop } from "@/app/(admin)/admin/setup-shop/action";
+import { setupShop } from "@/services/setup-shop-action";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {

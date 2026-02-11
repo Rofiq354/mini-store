@@ -35,7 +35,6 @@ export async function createProduct(data: CreateProductInput) {
       price: data.price,
       stock: data.stock ?? 0,
       category_id: data.category_id ?? null,
-      category: data.category ?? null,
       image_url: data.image_url ?? null,
       cost_price: data.cost_price ?? 0,
       is_active: data.is_active ?? true,
@@ -89,7 +88,6 @@ export async function deleteProduct(id: string, imageUrl: string | null) {
     if (storageError) console.error("Storage Delete Error:", storageError);
   }
 
-  // 2. Hapus data dari Database
   const { error } = await supabase.from("products").delete().eq("id", id);
 
   if (error) {

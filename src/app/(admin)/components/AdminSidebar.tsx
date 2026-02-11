@@ -6,6 +6,7 @@ import {
   Settings,
   Package,
   LogOut,
+  ListTree,
 } from "lucide-react";
 
 import {
@@ -28,6 +29,7 @@ import Link from "next/link";
 const items = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Products", url: "/admin/products", icon: Package },
+  { title: "Categories", url: "/admin/categories", icon: ListTree },
   { title: "Users", url: "/admin/users", icon: Users },
   { title: "Settings", url: "/admin/settings", icon: Settings },
 ];
@@ -58,7 +60,6 @@ export function AdminSidebar() {
             <SidebarMenu className="gap-1.5">
               {" "}
               {items.map((item) => {
-                // Cek apakah item ini aktif
                 const isActive = pathname === item.url;
 
                 return (

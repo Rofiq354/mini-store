@@ -5,10 +5,14 @@ import { ProductDialog } from "./components/ProductDialog";
 export default async function ProductsPage() {
   const supabase = await createClient();
 
-  // Ambil data produk dari Supabase
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const { data: products, error } = await supabase
     .from("products")
-    .select("*")
+    .select(`*, categories (name)`)
+    .eq("merchant_id", user?.id)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -24,11 +28,10 @@ export default async function ProductsPage() {
             Manage your store inventory and product details.
           </p>
         </div>
-        {/* Component Dialog untuk tambah produk */}
         <ProductDialog />
       </div>
 
-      <div className="rounded-md border bg-card">
+      <div className="bg-card">
         <ProductTable data={products || []} />
       </div>
     </div>

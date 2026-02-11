@@ -2,22 +2,17 @@
 
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { deleteProduct } from "@/services/product-action";
+import { deleteCategory } from "@/services/category-action";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 
-interface DeleteProductButtonProps {
+interface DeleteCategoryButtonProps {
   id: string;
   name: string;
-  imageUrl: string;
 }
 
-export function DeleteProductButton({
-  id,
-  name,
-  imageUrl,
-}: DeleteProductButtonProps) {
+export function DeleteCategoryButton({ id, name }: DeleteCategoryButtonProps) {
   async function handleDelete() {
-    await deleteProduct(id, imageUrl);
+    await deleteCategory(id);
   }
 
   return (
@@ -31,19 +26,19 @@ export function DeleteProductButton({
           <Trash2 className="h-4 w-4" />
         </Button>
       }
-      title="Hapus Produk?"
+      title="Hapus Kategori?"
       description={
         <>
-          Apakah Anda yakin ingin menghapus <strong>{name}</strong>? Data produk
-          dan gambar akan dihapus permanen dari sistem.
+          Apakah Anda yakin ingin menghapus kategori <strong>{name}</strong>?
+          Tindakan ini tidak dapat dibatalkan.
         </>
       }
       onConfirm={handleDelete}
-      confirmLabel="Ya, Hapus Produk"
+      confirmLabel="Ya, Hapus Kategori"
       toastMessages={{
-        loading: `Menghapus ${name}...`,
-        success: `${name} berhasil dihapus!`,
-        error: "Gagal menghapus produk. Silakan coba lagi.",
+        loading: `Menghapus kategori ${name}...`,
+        success: `Kategori ${name} berhasil dihapus!`,
+        error: (err: Error) => err.message || "Gagal menghapus kategori.",
       }}
     />
   );
