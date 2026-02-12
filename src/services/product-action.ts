@@ -15,6 +15,8 @@ type CreateProductInput = {
   is_active?: boolean;
 };
 
+/* FOR ADMIN ONLY ________________________________________________________________ */
+
 export async function createProduct(data: CreateProductInput) {
   const supabase = await createClient();
 
@@ -98,3 +100,104 @@ export async function deleteProduct(id: string, imageUrl: string | null) {
   revalidatePath("/admin/products");
   return { success: true };
 }
+
+/* FOR ADMIN ONLY ________________________________________________________________ */
+
+interface GetProductsParams {
+  context?: "landing" | "products" | "merchant";
+  merchantId?: string;
+  categoryId?: string;
+  searchTerm?: string;
+  priceRange?: [number, number];
+  sortBy?: string;
+  limit?: number;
+  isReady?: string;
+}
+
+/* FOR CUSTOMER ONLY _____________________________________________________________ */
+
+export async function getProductsAction({
+  context = "products",
+  merchantId,
+  categoryId,
+  searchTerm,
+  priceRange,
+  sortBy,
+  limit = 10,
+  isReady,
+}: GetProductsParams = {}) {
+  const supabase = await createClient();
+  let query = supabase
+    .from("products")
+    .select(
+      `
+      *,
+      profiles:merchant_id (id, shop_name),
+      categories:category_id!inner (id, name, slug)
+    `,
+    )
+    .eq("is_active", true);
+
+  if (context === "merchant" && merchantId) {
+    query = query.eq("merchant_id", merchantId);
+  }
+
+  if (categoryId && categoryId !== "all") {
+    const categorySlugs = categoryId.split(",");
+
+    query = query.in("categories.slug", categorySlugs);
+  }
+
+  if (isReady === "true") {
+    query = query.gt("stock", 0);
+  }
+
+  if (searchTerm) {
+    query = query.ilike("name", `%${searchTerm}%`);
+  }
+
+  if (priceRange) {
+    query = query.gte("price", priceRange[0]).lte("price", priceRange[1]);
+  }
+
+  switch (sortBy) {
+    case "termurah":
+      query = query.order("price", { ascending: true });
+      break;
+    case "termahal":
+      query = query.order("price", { ascending: false });
+      break;
+    case "terbaru":
+      query = query.order("created_at", { ascending: false });
+      break;
+    case "terlama":
+      query = query.order("created_at", { ascending: true });
+      break;
+    case "populer":
+      query = query.order("stock", { ascending: true });
+      break;
+    default:
+      query = query.order("created_at", { ascending: false });
+  }
+
+  if (limit) {
+    query = query.limit(limit);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error("Error fetching products:", error.message);
+    return { success: false, data: [] };
+  }
+
+  const formattedData = data.map((item: any) => ({
+    ...item,
+    store_name: item.profiles?.shop_name || "Toko Lokal",
+    category_name: item.categories?.name || "Uncategorized",
+  }));
+
+  return { success: true, data: formattedData };
+}
+
+/* FOR CUSTOMER ONLY _____________________________________________________________ */

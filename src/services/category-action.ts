@@ -3,6 +3,8 @@
 import { createClient } from "@/utils/supbase/server";
 import { revalidatePath } from "next/cache";
 
+/* FOR ADMIN ONLY ________________________________________________________________ */
+
 export async function getCategories() {
   const supabase = await createClient();
 
@@ -100,4 +102,32 @@ export async function deleteCategory(id: string) {
 
   revalidatePath("/categories");
   return { success: true };
+}
+
+/* FOR ADMIN ONLY ________________________________________________________________ */
+
+/* FOR CUSTOMER ONLY ________________________________________________________________ */
+
+export async function getAllUniqueCategories() {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("categories")
+    .select("slug, name")
+    .order("slug");
+
+  if (error) {
+    console.error("Error fetching categories:", error);
+    return [];
+  }
+
+  const uniqueCategories = data.filter(
+    (item, index, self) =>
+      index === self.findIndex((t) => t.slug === item.slug),
+  );
+
+  return uniqueCategories.map((item) => ({
+    id: item.slug,
+    label: item.name,
+  }));
 }
