@@ -24,7 +24,7 @@ export function ProductTable({ data }: { data: any[] }) {
     {
       header: "Name",
       accessor: "name" as const,
-      searchable: true, // Bisa dicari berdasarkan nama
+      searchable: true,
     },
     {
       header: "Category",

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react"; // Tambahkan ini
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { signInWithGoogle } from "@/services/auth-action";
-import { Loader2 } from "lucide-react"; // Ikon loading
+import { Loader2 } from "lucide-react";
 
 const SignInWithGoogleButton = () => {
   const [isPending, setIsPending] = useState(false);
@@ -14,7 +14,7 @@ const SignInWithGoogleButton = () => {
       await signInWithGoogle();
     } catch (error) {
       console.error(error);
-      setIsPending(false); // Matikan loading jika gagal
+      setIsPending(false);
     }
   };
 
@@ -24,7 +24,7 @@ const SignInWithGoogleButton = () => {
       type="button"
       className="w-full h-11  transition-all active:scale-[0.98] flex gap-3 border-input hover:bg-orange-50 hover:text-orange-950 dark:hover:bg-zinc-800 disabled:opacity-70 disabled:cursor-not-allowed"
       onClick={handleSignIn}
-      disabled={isPending} // Cegah klik ganda
+      disabled={isPending}
     >
       {isPending ? (
         <>

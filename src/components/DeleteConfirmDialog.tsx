@@ -81,7 +81,6 @@ export function DeleteConfirmDialog({
     }
   }
 
-  // Default description with item name
   const defaultDescription = itemName
     ? `Apakah Anda yakin ingin menghapus "${itemName}"? Tindakan ini tidak dapat dibatalkan.`
     : "Apakah Anda yakin? Tindakan ini tidak dapat dibatalkan.";

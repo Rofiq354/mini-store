@@ -1,6 +1,6 @@
-"use client"; // Wajib agar bisa menampung state error
+"use client";
 
-import { useActionState } from "react"; // Hook untuk menangkap return dari action
+import { useActionState } from "react";
 import { cn } from "@/lib/utils";
 import {
   Field,
@@ -18,12 +18,11 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-  // state berisi return dari server action (error zod, dsb)
   const [state, formAction] = useActionState(login, null);
 
   return (
     <form
-      action={formAction} // Gunakan formAction dari hook
+      action={formAction}
       className={cn("flex flex-col gap-6", className)}
       {...props}
     >
@@ -35,7 +34,6 @@ export function LoginForm({
           </p>
         </div>
 
-        {/* Error umum (misal user tidak ditemukan) */}
         {state?.message && (
           <div className="bg-primary/10 p-3 rounded-md text-primary text-sm">
             {state.message}
@@ -50,7 +48,6 @@ export function LoginForm({
             type="email"
             placeholder="nama@contoh.com"
           />
-          {/* Tampilkan error email di sini */}
           {state?.errors?.email && (
             <p className="text-primary text-xs">{state.errors.email[0]}</p>
           )}
@@ -72,7 +69,6 @@ export function LoginForm({
             type="password"
             placeholder="••••••••"
           />
-          {/* Tampilkan error password di sini */}
           {state?.errors?.password && (
             <p className="text-primary text-xs">{state.errors.password[0]}</p>
           )}

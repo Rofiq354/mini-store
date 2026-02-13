@@ -9,8 +9,8 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ShoppingCart, Store } from "lucide-react";
+import { Store } from "lucide-react";
+import { AddToCartButton } from "./AddToCartButton";
 
 type CardContext = "landing" | "products" | "merchant";
 
@@ -122,14 +122,20 @@ export function ProductCard({
       </CardContent>
 
       <CardFooter className="p-4 pt-0 mt-auto">
-        <Button
-          className="w-full shadow-sm active:scale-95 transition-transform"
-          disabled={product.stock === 0}
+        <AddToCartButton
+          product={{
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            stock: product.stock,
+            image_url: product.image_url,
+            merchant_id: product.merchant_id,
+            merchant_name:
+              product.store_name || product.profiles?.shop_name || "Toko",
+          }}
           size="lg"
-        >
-          <ShoppingCart className="h-5 w-5 mr-2" />
-          {product.stock === 0 ? "Stok Habis" : "Tambah ke Keranjang"}
-        </Button>
+          className="w-full shadow-sm active:scale-95 transition-transform"
+        />
       </CardFooter>
     </Card>
   );

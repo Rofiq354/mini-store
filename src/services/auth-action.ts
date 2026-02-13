@@ -36,7 +36,6 @@ export async function login(prevState: any, formData: FormData) {
 
   revalidatePath("/", "layout");
 
-  // 4. Redirect berdasarkan role
   if (userRole === "merchant") {
     redirect("/admin/products");
   } else {
@@ -47,7 +46,6 @@ export async function login(prevState: any, formData: FormData) {
 export async function signup(prevState: any, formData: FormData) {
   const supabase = await createClient();
 
-  // Mapping manual karena nama field di form pakai tanda hubung (-)
   const rawData = {
     firstName: formData.get("first-name"),
     lastName: formData.get("last-name"),
@@ -99,7 +97,7 @@ export async function signout() {
     redirect("/error");
   }
 
-  redirect("/logout");
+  redirect("/login");
 }
 
 export async function signInWithGoogle() {

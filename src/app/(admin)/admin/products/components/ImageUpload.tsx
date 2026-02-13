@@ -32,7 +32,6 @@ export function ImageUpload({
       const file = e.target.files?.[0];
       if (!file) return;
 
-      // 1. Buat Preview Lokal (Instan)
       const objectUrl = URL.createObjectURL(file);
       setPreview(objectUrl);
       setUploading(true);
@@ -45,7 +44,7 @@ export function ImageUpload({
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `product-images/${fileName}`;
 
-      // 2. Upload ke Bucket 'products'
+     
       const { error: uploadError } = await supabase.storage
         .from("products")
         .upload(filePath, file);
@@ -82,7 +81,6 @@ export function ImageUpload({
     <div className="space-y-4 w-full">
       <div className="flex items-center justify-center w-full">
         {preview ? (
-          // Tampilan Preview Gambar
           <div className="relative w-full h-40 border-2 border-dashed rounded-lg overflow-hidden group">
             <Image src={preview} alt="Preview" fill className="object-cover" />
             {uploading && (
@@ -101,7 +99,6 @@ export function ImageUpload({
             )}
           </div>
         ) : (
-          // Tampilan Input Dropzone ala-ala
           <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors border-gray-300">
             <div className="flex flex-col items-center justify-center pt-5 pb-6">
               <ImageIcon className="w-8 h-8 mb-3 text-gray-400" />
