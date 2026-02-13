@@ -71,14 +71,14 @@ export default function AllStoresPage() {
                           store.full_name ||
                           "Toko Tanpa Nama"}
                       </h2>
-                      <p className="text-sm text-muted-foreground line-clamp-2 mt-1 min-h-[40px]">
+                      <p className="text-sm text-muted-foreground line-clamp-2 mt-1 min-h-10">
                         {store.description || "Belum ada deskripsi toko."}
                       </p>
 
                       <div className="mt-4 flex items-center justify-between border-t pt-4">
                         <div className="flex items-center text-xs text-muted-foreground">
                           <MapPin className="mr-1 h-3 w-3" />
-                          <span className="truncate max-w-[150px]">
+                          <span className="truncate max-w-37.5">
                             {store.business_address || "Indonesia"}
                           </span>
                         </div>

@@ -22,48 +22,51 @@ export function CartSummary() {
   const total: number = subtotal + shipping;
 
   const handleCheckout = async () => {
-    if (items.length === 0) {
-      toast.error("Keranjang Anda kosong");
-      return;
-    }
+    if (items.length === 0) return toast.error("Keranjang kosong");
 
     setIsCheckingOut(true);
 
     try {
-      // 1. Siapkan item untuk checkout sesuai schema di cart-action.ts
+      // 1. Map items dengan tambahan field 'name' untuk Midtrans
       const checkoutItems = items.map((item) => ({
         productId: item.id,
         quantity: item.quantity,
         price: item.price,
+        name: item.name,
       }));
 
-      // 2. Panggil Server Action
-      const result = await createTransactionFromCart(checkoutItems);
+      const res = await createTransactionFromCart(checkoutItems);
 
-      // 3. Penanganan Error dari Server
-      if (result.error) {
-        toast.error(result.error);
-
-        // Jika ada error spesifik per produk (misal: stok habis tiba-tiba)
-        if (result.validationErrors) {
-          result.validationErrors.forEach((err: { message: string }) => {
-            toast.error(err.message, {
-              description: "Silakan sesuaikan jumlah di keranjang.",
-            });
-          });
-        }
+      if (res.error) {
+        toast.error(res.error);
         return;
       }
 
-      // 4. Sukses: Bersihkan keranjang dan arahkan ke halaman detail pesanan
-      if (result.success && result.transactionId) {
-        toast.success("Pesanan berhasil dibuat!");
-        clearCart();
-        router.push(`/orders/${result.transactionId}`);
+      // 2. Munculkan Pop-up Midtrans Snap
+      if (res.success && res.snapToken) {
+        clearCart(true);
+        // @ts-ignore (Snap dari script Midtrans)
+        window.snap.pay(res.snapToken, {
+          onSuccess: function (midtransData: any) {
+            console.log("Midtrans callback data:", midtransData);
+            toast.success("Pembayaran Berhasil!");
+            clearCart(); // Kosongkan keranjang di state/DB
+            router.push(`/orders/${res.transactionId}`);
+          },
+          onPending: function (midtransData: any) {
+            toast.info("Menunggu pembayaran...");
+            router.push(`/orders/${res.transactionId}`);
+          },
+          onError: function (midtransData: any) {
+            toast.error("Pembayaran Gagal!");
+          },
+          onClose: function () {
+            toast.info("Anda menutup jendela pembayaran sebelum selesai.");
+          },
+        });
       }
     } catch (error) {
-      console.error("Checkout error:", error);
-      toast.error("Terjadi kesalahan sistem saat checkout");
+      toast.error("Gagal memproses pembayaran");
     } finally {
       setIsCheckingOut(false);
     }

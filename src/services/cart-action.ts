@@ -1,6 +1,8 @@
 "use server";
 
+import { snap } from "@/lib/midtrans";
 import { createClient } from "@/utils/supbase/server";
+import { nanoid } from "nanoid";
 
 /**
  * Get product details with merchant info for cart
@@ -140,105 +142,172 @@ export async function createTransactionFromCart(
     productId: string;
     quantity: number;
     price: number;
+    name: string; // Tambahkan name untuk detail Midtrans
   }[],
 ) {
   const supabase = await createClient();
 
-  // Get current user
+  // 1. Cek Auth
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user) return { error: "Anda harus login untuk checkout" };
 
-  if (!user) {
-    return {
-      error: "Anda harus login untuk checkout",
-    };
-  }
-
-  // Validate stock first
-  const validation = await validateCartStock(
-    items.map((item) => ({
-      productId: item.productId,
-      quantity: item.quantity,
-    })),
-  );
-
-  if (validation.error) {
-    return validation;
-  }
-
-  // Get merchant_id from first product (assume all from same merchant for now)
-  const { data: product } = await supabase
+  // 2. Ambil merchant_id (Asumsi 1 checkout = 1 merchant sesuai diskusi)
+  const { data: productData } = await supabase
     .from("products")
     .select("merchant_id")
     .eq("id", items[0].productId)
     .single();
 
-  if (!product) {
-    return {
-      error: "Produk tidak ditemukan",
-    };
-  }
+  if (!productData) return { error: "Produk tidak ditemukan" };
 
-  // Calculate total
+  // 3. Persiapan ID Unik & Total Harga
+  const externalId = `TRX-${nanoid(10).toUpperCase()}`;
   const totalPrice = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
   );
 
-  // Create transaction
-  const { data: transaction, error: transactionError } = await supabase
+  try {
+    // 4. INSERT TRANSACTION (Status Awal: Pending)
+    const { data: transaction, error: txError } = await supabase
+      .from("transactions")
+      .insert({
+        external_id: externalId,
+        user_id: user.id,
+        merchant_id: productData.merchant_id,
+        total_price: totalPrice,
+        status: "pending", // Sesuai Enum kita
+      })
+      .select()
+      .single();
+
+    if (txError || !transaction)
+      throw new Error("Gagal membuat transaksi di database");
+
+    // 5. INSERT TRANSACTION ITEMS
+    const transactionItemsData = items.map((item) => ({
+      transaction_id: transaction.id,
+      product_id: item.productId,
+      merchant_id: productData.merchant_id,
+      quantity: item.quantity,
+      price_at_time: item.price,
+    }));
+
+    const { error: itemsError } = await supabase
+      .from("transaction_items")
+      .insert(transactionItemsData);
+
+    if (itemsError) throw itemsError;
+
+    // 6. HIT MIDTRANS API
+    const parameter = {
+      transaction_details: {
+        order_id: externalId,
+        gross_amount: totalPrice,
+      },
+      item_details: items.map((item) => ({
+        id: item.productId,
+        price: item.price,
+        quantity: item.quantity,
+        name: item.name,
+      })),
+      callbacks: {
+        finish: `${process.env.NEXT_PUBLIC_SITE_URL}/orders/${transaction.id}`,
+      },
+      customer_details: {
+        first_name: user.user_metadata?.full_name || user.email?.split("@")[0],
+        email: user.email,
+      },
+    };
+
+    const midtransTx = await snap.createTransaction(parameter);
+
+    // 7. UPDATE TRANSACTION DENGAN SNAP TOKEN
+    await supabase
+      .from("transactions")
+      .update({ snap_token: midtransTx.token })
+      .eq("id", transaction.id);
+
+    // 8. KURANGI STOK (Gunakan RPC agar atomik)
+    for (const item of items) {
+      await supabase.rpc("decrement_stock", {
+        product_id: item.productId,
+        quantity: item.quantity,
+      });
+    }
+
+    return {
+      success: true,
+      transactionId: transaction.id,
+      snapToken: midtransTx.token, // Kirim token ke Client
+      externalId: externalId,
+    };
+  } catch (err: any) {
+    console.error("Checkout process failed:", err);
+    return {
+      error: err.message || "Terjadi kesalahan saat memproses checkout",
+    };
+  }
+}
+
+/**
+ * Get transaction detail by id
+ * @param {string} id - Transaction id
+ * @returns {Promise<{data: TransactionDetail, error: string}>}
+ */
+export async function getTransactionDetail(id: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
     .from("transactions")
-    .insert({
-      merchant_id: product.merchant_id,
-      total_price: totalPrice,
-      payment_method: "cash", // Default to cash, can be updated
-    })
-    .select()
+    .select(
+      `
+      *,
+      profiles:merchant_id (shop_name),
+      transaction_items (
+        *,
+        products (name, image_url)
+      )
+    `,
+    )
+    .eq("id", id)
     .single();
 
-  if (transactionError || !transaction) {
-    return {
-      error: "Gagal membuat transaksi",
-    };
-  }
+  if (error) return { error: error.message };
+  return { data };
+}
 
-  // Create transaction items
-  const transactionItems = items.map((item) => ({
-    transaction_id: transaction.id,
-    product_id: item.productId,
-    quantity: item.quantity,
-    price_at_time: item.price,
-  }));
+/**
+ * Get all orders of a user
+ * @returns {Promise<{data: TransactionDetail[], error: string}>}
+ * @throws {Unauthorized} if user is not logged in
+ */
+export async function getUserOrders() {
+  const supabase = await createClient();
 
-  const { error: itemsError } = await supabase
-    .from("transaction_items")
-    .insert(transactionItems);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
 
-  if (itemsError) {
-    // Rollback transaction if items creation fails
-    await supabase.from("transactions").delete().eq("id", transaction.id);
-    return {
-      error: "Gagal menyimpan detail transaksi",
-    };
-  }
+  const { data, error } = await supabase
+    .from("transactions")
+    .select(
+      `
+      *,
+      profiles:merchant_id (shop_name),
+      transaction_items (
+        count
+      )
+    `,
+    )
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
 
-  // Update product stocks
-  for (const item of items) {
-    const { error: stockError } = await supabase.rpc("decrement_stock", {
-      product_id: item.productId,
-      quantity: item.quantity,
-    });
-
-    if (stockError) {
-      console.error("Failed to update stock:", stockError);
-    }
-  }
-
-  return {
-    success: true,
-    transactionId: transaction.id,
-  };
+  if (error) return { error: error.message };
+  return { data };
 }
 
 /**
@@ -345,10 +414,8 @@ export async function removeFromCartDb(productId?: string) {
 
   if (!user) return;
 
-  // Buat query dasar: hapus data milik user yang login
   let query = supabase.from("cart_items").delete().eq("user_id", user.id);
 
-  // Jika ada productId, tambahkan filter spesifik
   if (productId) {
     query = query.eq("product_id", productId);
   }
