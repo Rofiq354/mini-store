@@ -132,12 +132,7 @@ export function ProductSidebar({ categories }: ProductSidebarProps) {
         </div>
 
         {/* --- Kategori --- */}
-        <Accordion
-          type="single"
-          collapsible
-          defaultValue="item-1"
-          className="mb-6"
-        >
+        <Accordion type="single" collapsible defaultValue="item-1">
           <AccordionItem value="item-1" className="border-none">
             <AccordionTrigger className="hover:no-underline py-0 mb-3">
               <Label className="text-sm font-bold text-gray-700 cursor-pointer">
@@ -182,15 +177,10 @@ export function ProductSidebar({ categories }: ProductSidebarProps) {
           </AccordionItem>
         </Accordion>
 
-        <Separator className="my-4 opacity-50" />
+        <Separator className="my-2 opacity-50" />
 
         {/* --- Rentang Harga --- */}
-        <Accordion
-          type="single"
-          collapsible
-          defaultValue="price-item"
-          className="mb-6"
-        >
+        <Accordion type="single" collapsible defaultValue="price-item">
           <AccordionItem value="price-item" className="border-none">
             <AccordionTrigger className="hover:no-underline py-0 mb-4">
               <Label className="text-sm font-bold text-gray-700 cursor-pointer">
@@ -256,7 +246,7 @@ export function ProductSidebar({ categories }: ProductSidebarProps) {
           </AccordionItem>
         </Accordion>
 
-        <Separator className="my-4 opacity-50" />
+        <Separator className="my-2 opacity-50" />
 
         {/* --- Filter Tambahan: Pengiriman & Stok --- */}
         <div className="mb-6 space-y-3">

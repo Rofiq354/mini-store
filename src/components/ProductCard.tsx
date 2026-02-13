@@ -83,7 +83,7 @@ export function ProductCard({
       <CardHeader className="p-4 pb-0 grow">
         {!isMerchant && (
           <Link
-            href={`/merchant/${product.merchant_id}`}
+            href={`/stores/${product.merchant_id}`}
             className="flex items-center gap-1.5 mb-1.5 text-primary/80 font-bold hover:text-primary transition-colors w-fit group/store"
           >
             <Store className="h-3 w-3" />

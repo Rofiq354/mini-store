@@ -200,4 +200,27 @@ export async function getProductsAction({
   return { success: true, data: formattedData };
 }
 
+export async function getProductDetail(productId: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("products")
+    .select(
+      `
+      *,
+      profiles:merchant_id (*),
+      categories:category_id (*)
+    `,
+    )
+    .eq("id", productId)
+    .single();
+
+  if (error) {
+    console.error("Error fetching product detail:", error.message);
+    return { error: error.message, data: null };
+  }
+
+  return { data, success: true };
+}
+
 /* FOR CUSTOMER ONLY _____________________________________________________________ */
