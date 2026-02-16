@@ -34,7 +34,7 @@ export default function AllStoresPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
+    <div className="container mx-auto max-w-7xl px-4 pt-16 pb-8 md:py-8">
       <div className="mb-10">
         <h1 className="text-3xl font-bold tracking-tight">Jelajahi Gerai</h1>
         <p className="mt-2 text-muted-foreground">
@@ -51,7 +51,10 @@ export default function AllStoresPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {stores.map((store) => (
-            <Link key={store.id} href={`/stores/${store.id}`}>
+            <Link
+              key={store.id}
+              href={`/stores/${store.shop_slug || store.id}`}
+            >
               <Card className="overflow-hidden transition-all hover:shadow-md active:scale-[0.98]">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">

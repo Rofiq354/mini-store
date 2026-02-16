@@ -13,16 +13,23 @@ import { Store } from "lucide-react";
 import { AddToCartButton } from "./AddToCartButton";
 
 type CardContext = "landing" | "products" | "merchant";
+type CardLayout = "grid" | "list";
 
 interface ProductCardProps {
   product: any;
   context?: CardContext;
+  layout?: CardLayout;
 }
 
 export function ProductCard({
   product,
   context = "landing",
+  layout = "grid",
 }: ProductCardProps) {
+  if (layout === "list") {
+    return <ProductListCard product={product} context={context} />;
+  }
+
   const isLanding = context === "landing";
   const isMerchant = context === "merchant";
   const isProducts = context === "products";
@@ -80,10 +87,10 @@ export function ProductCard({
         </div>
       </Link>
 
-      <CardHeader className="p-4 pb-0 grow">
+      <CardHeader className="p-4 pb-0 xs:py-0 sm:p-4 sm:pb-0 grow xs:gap-0 sm:gap-2">
         {!isMerchant && (
           <Link
-            href={`/stores/${product.merchant_id}`}
+            href={`/stores/${product.profiles?.shop_slug}`}
             className="flex items-center gap-1.5 mb-1.5 text-primary/80 font-bold hover:text-primary transition-colors w-fit group/store"
           >
             <Store className="h-3 w-3" />
@@ -112,7 +119,7 @@ export function ProductCard({
         )}
       </CardHeader>
 
-      <CardContent className="p-4">
+      <CardContent className="p-4 xs:py-0 sm:py-4">
         <div className="flex items-baseline gap-1">
           <span className="text-xs font-black text-primary">Rp</span>
           <span className="text-2xl font-black text-primary tracking-tight">
@@ -137,6 +144,94 @@ export function ProductCard({
           className="w-full shadow-sm active:scale-95 transition-transform"
         />
       </CardFooter>
+    </Card>
+  );
+}
+
+function ProductListCard({
+  product,
+  context,
+}: {
+  product: any;
+  context: CardContext;
+}) {
+  return (
+    <Card className="group py-0 overflow-hidden gap-4 border-none shadow-sm hover:shadow-md transition-all duration-300 flex flex-row rounded-2xl bg-white w-full h-32 md:h-36">
+      <Link
+        href={`/products/${product.id}`}
+        className="relative w-28 md:w-32 h-full p-2 shrink-0"
+      >
+        <div className="relative h-full w-full overflow-hidden rounded-xl bg-gray-50 border border-gray-50 shadow-inner">
+          {product.image_url ? (
+            <Image
+              src={product.image_url}
+              alt={product.name}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-muted-foreground/30">
+              <Store className="h-6 w-6 opacity-20" />
+            </div>
+          )}
+
+          {product.stock === 0 && (
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] flex items-center justify-center z-10">
+              <Badge
+                variant="secondary"
+                className="bg-white text-foreground font-bold text-[7px] py-0 px-1 h-4"
+              >
+                Habis
+              </Badge>
+            </div>
+          )}
+        </div>
+      </Link>
+
+      <div className="flex flex-col flex-1 p-3 pr-4 overflow-hidden justify-center">
+        <div className="min-w-0">
+          <Link
+            href={`/stores/${product.profiles?.shop_slug}`}
+            className="flex items-center gap-1 mb-0.5 text-primary/70 font-bold text-[9px] uppercase tracking-tighter hover:underline"
+          >
+            <span className="truncate max-w-30">
+              {product.profiles?.shop_name || product.store_name || "Toko"}
+            </span>
+          </Link>
+
+          <Link href={`/products/${product.id}`}>
+            <h3 className="font-bold text-sm md:text-base capitalize leading-tight line-clamp-1 text-gray-800 group-hover:text-primary transition-colors">
+              {product.name}
+            </h3>
+          </Link>
+        </div>
+
+        <div className="mt-2 flex items-center justify-between gap-2">
+          <div className="flex items-baseline gap-0.5">
+            <span className="text-[9px] font-black text-primary">Rp</span>
+            <span className="text-base md:text-lg font-black text-primary tracking-tight">
+              {product.price.toLocaleString("id-ID")}
+            </span>
+          </div>
+
+          <div className="w-10 h-10 md:w-auto">
+            <AddToCartButton
+              product={{
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                stock: product.stock,
+                image_url: product.image_url,
+                merchant_id: product.merchant_id,
+                merchant_name:
+                  product.store_name || product.profiles?.shop_name || "Toko",
+              }}
+              size="icon"
+              className="rounded-full shadow-sm"
+            />
+          </div>
+        </div>
+      </div>
     </Card>
   );
 }

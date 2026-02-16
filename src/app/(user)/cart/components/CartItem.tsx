@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Trash2, Minus, Plus, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   useCartStore,
   type CartItem as CartItemType,
@@ -40,109 +40,99 @@ export function CartItem({ item }: CartItemProps) {
   return (
     <Card
       className={cn(
-        "overflow-hidden transition-all duration-300",
+        "group overflow-hidden transition-all p-3 duration-300 rounded-2xl border-gray-100 shadow-sm hover:border-primary/30",
         isRemoving && "opacity-0 scale-95",
       )}
     >
-      <div className="flex flex-col sm:flex-row">
-        {/* Product Image */}
-        <Link
-          href={`/products/${item.id}`}
-          className="relative h-40 w-full sm:h-auto sm:w-40 shrink-0"
-        >
-          {item.image_url ? (
-            <Image
-              src={item.image_url}
-              alt={item.name}
-              fill
-              className="object-cover"
-              sizes="160px"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center bg-muted">
-              <Store className="h-12 w-12 text-muted-foreground" />
-            </div>
-          )}
-        </Link>
-
-        {/* Product Info */}
-        <div className="flex flex-1 flex-col p-4">
-          {/* Header: Name & Remove Button */}
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <Link
-                href={`/products/${item.id}`}
-                className="font-semibold text-foreground hover:text-primary transition-colors line-clamp-2"
-              >
-                {item.name}
-              </Link>
-              <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-                <Store className="h-3.5 w-3.5" />
-                <span>{item.merchant_name}</span>
+      <CardContent className="p-0">
+        <div className="flex items-center gap-4">
+          <Link
+            href={`/products/${item.id}`}
+            className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-gray-50"
+          >
+            {item.image_url ? (
+              <Image
+                src={item.image_url}
+                alt={item.name}
+                fill
+                className="object-cover transition-transform duration-300 group-hover:scale-110"
+                sizes="96px"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-muted">
+                <Store className="h-8 w-8 text-muted-foreground" />
               </div>
-              {item.category_name && (
-                <div className="mt-1 text-xs text-muted-foreground">
-                  {item.category_name}
+            )}
+          </Link>
+
+          <div className="flex flex-1 flex-col min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <Link
+                  href={`/products/${item.id}`}
+                  className="font-bold text-sm md:text-base text-foreground hover:text-primary transition-colors line-clamp-1"
+                >
+                  {item.name}
+                </Link>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+                  <Store className="h-3 w-3" />
+                  <span className="truncate">{item.merchant_name}</span>
                 </div>
-              )}
-            </div>
+              </div>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-              onClick={handleRemove}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* Footer: Quantity Controls & Price */}
-          <div className="mt-4 flex items-center justify-between">
-            {/* Quantity Controls */}
-            <div className="flex items-center gap-2">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="icon"
-                className="h-8 w-8"
-                onClick={() => handleUpdateQuantity(item.quantity - 1)}
-                disabled={item.quantity <= 1}
+                className="h-7 w-7 text-muted-foreground hover:bg-destructive/10 hover:text-destructive shrink-0"
+                onClick={handleRemove}
               >
-                <Minus className="h-3 w-3" />
-              </Button>
-              <span className="w-12 text-center text-sm font-medium">
-                {item.quantity}
-              </span>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => handleUpdateQuantity(item.quantity + 1)}
-                disabled={item.quantity >= item.stock}
-              >
-                <Plus className="h-3 w-3" />
+                <Trash2 className="h-3.5 w-3.5" />
               </Button>
             </div>
 
-            {/* Price */}
-            <div className="text-right">
-              <p className="text-lg font-bold text-foreground">
-                Rp {subtotal.toLocaleString("id-ID")}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                @ Rp {item.price.toLocaleString("id-ID")}
-              </p>
-            </div>
-          </div>
+            <div className="mt-3 flex items-end justify-between">
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground line-through decoration-gray-300">
+                  {/* Bisa untuk harga coret jika ada diskon, jika tidak biarkan kosong */}
+                </p>
+                <p className="font-bold text-primary">
+                  Rp {subtotal.toLocaleString("id-ID")}
+                </p>
+              </div>
 
-          {/* Stock Warning */}
-          {item.quantity >= item.stock && (
-            <div className="mt-2 text-xs text-orange-600">
-              Stok maksimal: {item.stock}
+              <div className="flex items-center bg-gray-50 rounded-lg p-1 border border-gray-100">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 rounded-md hover:bg-white hover:shadow-sm"
+                  onClick={() => handleUpdateQuantity(item.quantity - 1)}
+                  disabled={item.quantity <= 1}
+                >
+                  <Minus className="h-3 w-3" />
+                </Button>
+                <span className="w-8 text-center text-xs font-bold">
+                  {item.quantity}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 rounded-md hover:bg-white hover:shadow-sm"
+                  onClick={() => handleUpdateQuantity(item.quantity + 1)}
+                  disabled={item.quantity >= item.stock}
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
-          )}
+
+            {item.quantity >= item.stock && (
+              <p className="mt-1 text-[10px] text-orange-600 font-medium">
+                Stok maksimal tercapai
+              </p>
+            )}
+          </div>
         </div>
-      </div>
+      </CardContent>
     </Card>
   );
 }

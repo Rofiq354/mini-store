@@ -132,9 +132,10 @@ export async function getProductsAction({
     .select(
       `
       *,
-      profiles:merchant_id (id, shop_name),
+      profiles:merchant_id (id, shop_name, shop_slug),
       categories:category_id!inner (id, name, slug)
     `,
+      { count: "exact" },
     )
     .eq("is_active", true);
 
@@ -184,11 +185,11 @@ export async function getProductsAction({
     query = query.limit(limit);
   }
 
-  const { data, error } = await query;
+  const { data, error, count } = await query;
 
   if (error) {
     console.error("Error fetching products:", error.message);
-    return { success: false, data: [] };
+    return { success: false, data: [], count: 0 };
   }
 
   const formattedData = data.map((item: any) => ({
@@ -197,7 +198,7 @@ export async function getProductsAction({
     category_name: item.categories?.name || "Uncategorized",
   }));
 
-  return { success: true, data: formattedData };
+  return { success: true, data: formattedData, count: count || 0 };
 }
 
 export async function getProductDetail(productId: string) {

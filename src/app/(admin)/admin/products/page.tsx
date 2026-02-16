@@ -1,6 +1,15 @@
 import { createClient } from "@/utils/supbase/server";
 import { ProductTable } from "./components/ProductTable";
 import { ProductDialog } from "./components/ProductDialog";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Home, Package } from "lucide-react";
 
 export default async function ProductsPage() {
   const supabase = await createClient();
@@ -21,16 +30,42 @@ export default async function ProductsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Breadcrumbs */}
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink
+              href="/admin/dashboard"
+              className="flex items-center gap-1"
+            >
+              <Home className="h-3.5 w-3.5" />
+              Dashboard
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage className="flex items-center gap-1">
+              <Package className="h-3.5 w-3.5" />
+              Products
+            </BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
+      {/* Header Section */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Products</h1>
-          <p className="text-muted-foreground">
-            Manage your store inventory and product details.
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            Daftar Produk
+          </h1>
+          <p className="text-muted-foreground text-sm mt-3">
+            Kelola stok, harga, dan informasi detail produk warung Anda di sini.
           </p>
         </div>
         <ProductDialog />
       </div>
 
+      {/* Table Section */}
       <div className="bg-card">
         <ProductTable data={products || []} />
       </div>

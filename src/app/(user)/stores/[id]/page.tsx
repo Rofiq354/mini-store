@@ -1,8 +1,8 @@
-import { getStoreDetail } from "@/services/store-action";
+import { getStoreDetailBySlug } from "@/services/store-action";
 import { ProductCard } from "@/components/ProductCard";
 import { EmptyState } from "@/components/EmptyState";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Package, Calendar, Store, ShoppingBag } from "lucide-react";
+import { MapPin, Package, Calendar, ShoppingBag } from "lucide-react";
 import { notFound } from "next/navigation";
 
 export default async function StoreDetailPage({
@@ -10,10 +10,9 @@ export default async function StoreDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const { store, products, error } = await getStoreDetail(id);
+  const { id: slug } = await params;
+  const { store, products, error } = await getStoreDetailBySlug(slug);
 
-  // Jika store tidak ditemukan atau terjadi error database
   if (error || !store) {
     notFound();
   }
@@ -21,8 +20,7 @@ export default async function StoreDetailPage({
   const productCount = products?.length || 0;
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
-      {/* Store Profile Header */}
+    <div className="container mx-auto max-w-7xl px-4 pt-16 pb-8 md:py-8">
       <div className="relative mb-10 overflow-hidden rounded-[2rem] border bg-background p-8 shadow-sm">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
           <Avatar className="h-24 w-24 border-4 border-background shadow-xl md:h-32 md:w-32">
@@ -64,7 +62,6 @@ export default async function StoreDetailPage({
         </div>
       </div>
 
-      {/* Product List Section */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold tracking-tight">Produk Gerai</h2>
@@ -78,7 +75,7 @@ export default async function StoreDetailPage({
             description={`Sepertinya ${store.shop_name || "penjual"} belum mengunggah produk ke gerai ini.`}
           />
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {products?.map((product: any) => (
               <ProductCard
                 key={product.id}

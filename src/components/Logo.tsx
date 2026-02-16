@@ -14,7 +14,6 @@ export function Logo({
 }: LogoProps) {
   return (
     <Link href="/" className={cn("flex items-center gap-2.5 group", className)}>
-      {/* SVG Anda yang sudah di-custom warnanya */}
       <svg
         width="24"
         height="27"

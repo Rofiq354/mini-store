@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ShoppingCart, Check } from "lucide-react";
+import { ShoppingCart, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCartStore, type CartItem } from "@/store/useCartStore";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ interface AddToCartButtonProps {
   className?: string;
   showIcon?: boolean;
   disabled?: boolean;
+  buttonLabel?: string | null;
 }
 
 export function AddToCartButton({
@@ -27,6 +28,7 @@ export function AddToCartButton({
   size = "default",
   className,
   showIcon = true,
+  buttonLabel,
   disabled = false,
 }: AddToCartButtonProps) {
   const router = useRouter();
@@ -59,6 +61,7 @@ export function AddToCartButton({
 
   const currentQuantity = getItemQuantity(product.id);
   const isInCart = currentQuantity > 0;
+  const isIconOnly = size === "icon";
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -109,17 +112,19 @@ export function AddToCartButton({
 
   const isDisabled = disabled || product.stock <= 0 || isAdding;
 
-  let buttonLabel;
-  if (isAdding) {
+  // let buttonLabel;
+  if (isIconOnly) {
+    buttonLabel = null;
+  } else if (isAdding) {
     buttonLabel = "Menambahkan...";
   } else if (justAdded) {
     buttonLabel = "Ditambahkan!";
   } else if (product.stock <= 0) {
     buttonLabel = "Stok Habis";
   } else if (mounted && user && role === "customer" && isInCart) {
-    buttonLabel = `Tambah Lagi (${currentQuantity})`;
+    buttonLabel = `Tambah lagi (${currentQuantity})`;
   } else {
-    buttonLabel = "Tambah ke Keranjang";
+    buttonLabel = buttonLabel || "Tambah";
   }
 
   return (
@@ -130,12 +135,19 @@ export function AddToCartButton({
       onClick={handleAddToCart}
       disabled={isDisabled}
     >
-      {showIcon &&
-        (justAdded ? (
-          <Check className="mr-2 h-4 w-4" />
-        ) : (
-          <ShoppingCart className="mr-2 h-4 w-4" />
-        ))}
+      {showIcon && (
+        <>
+          {isAdding ? (
+            <Loader2
+              className={cn("h-4 w-4 animate-spin", !isIconOnly && "mr-2")}
+            />
+          ) : justAdded ? (
+            <Check className={cn("h-4 w-4", !isIconOnly && "mr-2")} />
+          ) : (
+            <ShoppingCart className={cn("h-4 w-4", !isIconOnly && "mr-2")} />
+          )}
+        </>
+      )}
       {buttonLabel}
     </Button>
   );

@@ -8,6 +8,7 @@ export default async function ProductList() {
   const { data: latestProducts } = await getProductsAction({
     context: "landing",
     limit: 4,
+    isReady: "true",
     sortBy: "terbaru",
   });
 
@@ -17,10 +18,10 @@ export default async function ProductList() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight text-foreground">
+            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
               Produk Terbaru
             </h2>
-            <p className="mt-2 text-muted-foreground">
+            <p className="mt-3 text-lg text-muted-foreground">
               Temukan produk terbaru dari warung-warung lokal terbaik
             </p>
           </div>

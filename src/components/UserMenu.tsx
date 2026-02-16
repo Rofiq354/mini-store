@@ -26,12 +26,11 @@ export function UserMenu({ email, role }: UserMenuProps) {
 
   return (
     <div className="flex items-center gap-2">
-      {/* Dashboard Button dikembalikan ke sini */}
       {role === "merchant" && (
         <Button variant="outline" size="sm" asChild>
           <Link href="/admin">
             <LayoutDashboard className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Dashboard</span>
+            <span className="inline">Dashboard</span>
           </Link>
         </Button>
       )}

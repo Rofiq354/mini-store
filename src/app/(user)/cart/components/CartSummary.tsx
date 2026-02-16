@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { useCartStore } from "@/store/useCartStore";
 import { createTransactionFromCart } from "@/services/cart-action";
 import { toast } from "sonner";
+import { formatIDR } from "@/lib/utils";
 
 export function CartSummary() {
   const router = useRouter();
@@ -72,15 +73,6 @@ export function CartSummary() {
     }
   };
 
-  // Helper untuk formatting Rupiah agar tidak berulang
-  const formatRupiah = (amount: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
   return (
     <div className="space-y-4">
       <Card>
@@ -91,12 +83,12 @@ export function CartSummary() {
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Subtotal</span>
-              <span className="font-medium">{formatRupiah(subtotal)}</span>
+              <span className="font-medium">{formatIDR(subtotal)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Ongkir</span>
               <span className="font-medium text-green-600">
-                {shipping === 0 ? "Gratis" : formatRupiah(shipping)}
+                {shipping === 0 ? "Gratis" : formatIDR(shipping)}
               </span>
             </div>
           </div>
@@ -107,11 +99,11 @@ export function CartSummary() {
             <span className="font-semibold">Total</span>
             <div className="text-right">
               <p className="text-xl font-bold text-foreground">
-                {formatRupiah(total)}
+                {formatIDR(total)}
               </p>
-              <p className="text-xs text-muted-foreground">
+              {/* <p className="text-xs text-muted-foreground">
                 Sudah termasuk pajak
-              </p>
+              </p> */}
             </div>
           </div>
 

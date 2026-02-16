@@ -6,7 +6,6 @@ import { CartHeader } from "./components/CartHeader";
 import { CartItem } from "./components/CartItem";
 import { CartSummary } from "./components/CartSummary";
 import { EmptyCart } from "./components/EmptyCart";
-import { ContinueShopping } from "./components/ContinueShopping";
 import { Loader2 } from "lucide-react";
 
 export default function CartPage() {
@@ -15,7 +14,7 @@ export default function CartPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto max-w-7xl px-4 py-32 flex flex-col items-center justify-center gap-4">
+      <div className="container mx-auto max-w-4xl px-4 py-32 flex flex-col items-center justify-center gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <p className="text-muted-foreground animate-pulse">
           Memuat keranjang...
@@ -25,21 +24,21 @@ export default function CartPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
+    <div className="container mx-auto max-w-5xl px-4 py-15 md:py-10">
       <CartHeader />
 
       {items.length === 0 ? (
         <EmptyCart />
       ) : (
-        <div className="flex flex-col gap-8 lg:flex-row">
-          <div className="flex-1 space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* List Items */}
+          <div className="lg:col-span-7 space-y-4">
             {items.map((item) => (
               <CartItem key={item.id} item={item} />
             ))}
-            <ContinueShopping />
           </div>
 
-          <div className="w-full lg:w-96">
+          <div className="lg:col-span-5 sticky top-24">
             <CartSummary />
           </div>
         </div>

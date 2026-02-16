@@ -9,7 +9,7 @@ export async function getAllStores() {
   const { data, error } = await supabase
     .from("profiles")
     .select(
-      "id, full_name, avatar_url, shop_name, description, business_address",
+      "id, full_name, avatar_url, shop_name, description, business_address, shop_slug",
     )
     .eq("role", "merchant")
     .eq("is_active", true)
@@ -23,32 +23,29 @@ export async function getAllStores() {
   return { data: data || [], success: true };
 }
 
-export async function getStoreDetail(storeId: string) {
+export async function getStoreDetailBySlug(slug: string) {
   const supabase = await createClient();
 
-  // 1. Ambil data profil toko saja
   const { data: store, error: storeError } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", storeId)
+    .eq("shop_slug", slug)
     .single();
 
-  if (storeError) {
-    console.error("Error fetching store:", storeError.message);
-    return { error: storeError.message, store: null, products: [] };
+  if (storeError || !store) {
+    console.error("Error fetching store by slug:", storeError?.message);
+    return { error: "Store not found", store: null, products: [] };
   }
 
-  // 2. Gunakan action yang sudah ada untuk ambil produk
-  // Kita set context "merchant" dan kirim storeId sebagai merchantId
   const productResult = await getProductsAction({
     context: "merchant",
-    merchantId: storeId,
-    limit: 100, // Kita ambil lebih banyak untuk halaman detail toko
+    merchantId: store.id,
+    limit: 100,
   });
 
   return {
     store,
-    products: productResult.data || [], // Menggunakan data yang sudah di-format oleh actionmu
+    products: productResult.data || [],
     success: true,
   };
 }

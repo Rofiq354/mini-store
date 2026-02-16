@@ -1,5 +1,4 @@
 import { getTransactionDetail } from "@/services/cart-action";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -49,13 +48,13 @@ export default async function OrderDetailPage({
   const StatusIcon = currentStatus.icon;
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-10">
+    <div className="container mx-auto max-w-3xl px-4 py-16 md:py-10">
       <OrderStatusWatcher orderId={id} />
 
       <Button
         variant="ghost"
         asChild
-        className="mb-6 -ml-4 text-muted-foreground hover:text-primary transition-colors"
+        className="mb-6 ml-0 md:-ml-4 text-muted-foreground hover:text-primary transition-colors"
       >
         <Link href="/orders">
           <ArrowLeft className="mr-2 h-4 w-4" /> Kembali
@@ -86,12 +85,13 @@ export default async function OrderDetailPage({
             <div className="space-y-4">
               {order.transaction_items.map((item: any) => (
                 <div key={item.id} className="flex gap-4">
-                  <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-gray-50 border">
+                  <div className="relative h-16 w-16 rounded-lg overflow-hidden bg-gray-50 border">
                     <Image
                       src={item.products?.image_url || "/placeholder.jpg"}
                       alt={item.products?.name}
                       fill
-                      className="object-contain p-2"
+                      className="object-cover p-1 rounded-xl"
+                      sizes="(max-width: 168px) 100vw, (max-width: 212px) 50vw, 33vw"
                     />
                   </div>
                   <div className="flex-1">

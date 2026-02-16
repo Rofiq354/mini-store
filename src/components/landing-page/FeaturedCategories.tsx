@@ -1,108 +1,133 @@
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
+import { getAllUniqueCategories } from "@/services/category-action";
+import { EmptyState } from "../EmptyState";
 
-const categories = [
-  {
-    name: "Makanan",
-    icon: "🍔",
-    href: "/kategori/makanan",
-    color: "from-orange-500/10 to-orange-500/5",
-    count: 245,
-  },
-  {
-    name: "Minuman",
-    icon: "🥤",
-    href: "/kategori/minuman",
-    color: "from-blue-500/10 to-blue-500/5",
-    count: 189,
-  },
-  {
-    name: "Snack",
-    icon: "🍿",
-    href: "/kategori/snack",
-    color: "from-yellow-500/10 to-yellow-500/5",
-    count: 312,
-  },
-  {
-    name: "Sembako",
-    icon: "🌾",
-    href: "/kategori/sembako",
-    color: "from-green-500/10 to-green-500/5",
-    count: 156,
-  },
-  {
-    name: "Bumbu",
-    icon: "🧂",
-    href: "/kategori/bumbu",
-    color: "from-red-500/10 to-red-500/5",
-    count: 98,
-  },
-  {
-    name: "Frozen Food",
-    icon: "🧊",
-    href: "/kategori/frozen",
-    color: "from-cyan-500/10 to-cyan-500/5",
-    count: 127,
-  },
-  {
-    name: "Kebutuhan Rumah",
-    icon: "🏠",
-    href: "/kategori/rumah-tangga",
+const categoryStyleMap: Record<string, { icon: string; color: string }> = {
+  // --- Kebutuhan Pokok ---
+  sembako: { icon: "🌾", color: "from-green-500/10 to-green-500/5" },
+  "mie-instan": { icon: "🍜", color: "from-yellow-600/10 to-yellow-600/5" },
+
+  // --- Konsumsi ---
+  makanan: { icon: "🍱", color: "from-orange-500/10 to-orange-500/5" },
+  minuman: { icon: "🥤", color: "from-blue-500/10 to-blue-500/5" },
+  snack: { icon: "🍿", color: "from-amber-500/10 to-amber-500/5" },
+  bumbu: { icon: "🧂", color: "from-red-500/10 to-red-500/5" },
+
+  // --- Kebersihan & Perawatan ---
+  "sabun-kebersihan": { icon: "🧼", color: "from-cyan-500/10 to-cyan-500/5" },
+  "perawatan-tubuh": { icon: "🧴", color: "from-pink-500/10 to-pink-500/5" },
+
+  // --- Rumah Tangga ---
+  "kebutuhan-rumah": {
+    icon: "🧹",
     color: "from-purple-500/10 to-purple-500/5",
-    count: 203,
   },
-  {
-    name: "Lainnya",
-    icon: "📦",
-    href: "/kategori",
-    color: "from-gray-500/10 to-gray-500/5",
-    count: 432,
-  },
-];
+  "obat-obatan": { icon: "💊", color: "from-emerald-500/10 to-emerald-500/5" },
 
-export default function FeaturedCategories() {
+  // --- Tambahan UMKM ---
+  frozen: { icon: "🧊", color: "from-sky-500/10 to-sky-500/5" },
+  "rokok-korek": { icon: "🔥", color: "from-slate-500/10 to-slate-500/5" },
+};
+
+export default async function FeaturedCategories() {
+  const categoriesData = await getAllUniqueCategories();
+
+  const knownCategories: any[] = [];
+  const unknownCategories: any[] = [];
+
+  categoriesData.forEach((cat) => {
+    if (categoryStyleMap[cat.id]) {
+      knownCategories.push(cat);
+    } else {
+      unknownCategories.push(cat);
+    }
+  });
+
+  let displayed = [...knownCategories];
+
+  if (unknownCategories.length > 0) {
+    displayed.push({
+      id: "others",
+      label: "Produk Lainnya",
+      isOther: true,
+      count: unknownCategories.length,
+    });
+  }
+
+  const displayedCategories = displayed.slice(3, 12);
+
   return (
     <section className="py-16 bg-background">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Jelajahi Kategori
           </h2>
           <p className="mt-3 text-lg text-muted-foreground">
-            Temukan produk dari berbagai kategori pilihan
+            Temukan produk pilihan dari kategori favoritmu
           </p>
         </div>
 
-        {/* Categories Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 md:gap-6">
-          {categories.map((category) => (
-            <Link key={category.name} href={category.href}>
-              <Card className="group overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
-                <CardContent className="p-6 text-center">
-                  <div
-                    className={`mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-linear-to-br ${category.color} transition-transform duration-300 group-hover:scale-110`}
-                  >
-                    <span className="text-4xl">{category.icon}</span>
-                  </div>
-                  <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                    {category.name}
-                  </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {category.count} produk
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
+        {displayedCategories.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
+            {displayedCategories.map((cat) => {
+              if (cat.isOther) {
+                return (
+                  <Link key="others" href="/products">
+                    <Card className="group overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 rounded-3xl bg-muted/50">
+                      <CardContent className="p-6 text-center">
+                        <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-linear-to-br from-gray-500/10 to-gray-500/5 transition-transform duration-300 group-hover:scale-110">
+                          <span className="text-4xl">📦</span>
+                        </div>
+                        <h3 className="font-bold text-foreground group-hover:text-primary transition-colors">
+                          {cat.label}
+                        </h3>
+                        <p className="mt-1 text-xs text-primary font-bold uppercase tracking-wider">
+                          {cat.count}+ Kategori
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              }
 
-        {/* View All Button */}
+              const style = categoryStyleMap[cat.id];
+              return (
+                <Link key={cat.id} href={`/products?category=${cat.id}`}>
+                  <Card className="group overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 rounded-3xl">
+                    <CardContent className="p-6 text-center">
+                      <div
+                        className={`mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-linear-to-br ${style.color} transition-transform duration-300 group-hover:scale-110`}
+                      >
+                        <span className="text-4xl">{style.icon}</span>
+                      </div>
+                      <h3 className="font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                        {cat.label}
+                      </h3>
+                      <p className="mt-1 text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                        Cek Produk
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        ) : (
+          <EmptyState
+            icon={<span className="text-4xl">🏪</span>}
+            title="Kategori Belum Tersedia"
+            description="Saat ini belum ada kategori produk yang tersedia dari warung-warung mitra. Silakan kembali lagi nanti!"
+            className="rounded-3xl bg-muted/20"
+          />
+        )}
+
         <div className="mt-10 text-center">
           <Link
-            href="/kategori"
-            className="inline-flex items-center gap-2 text-primary font-semibold hover:gap-3 transition-all"
+            href="/products"
+            className="inline-flex items-center gap-2 text-primary font-bold hover:gap-3 transition-all"
           >
             Lihat Semua Kategori
             <ArrowRight className="h-4 w-4" />

@@ -49,14 +49,14 @@ export default async function OrdersPage() {
   };
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-10">
+    <div className="container mx-auto max-w-4xl px-4 py-15 md:py-10">
       <Button
         variant="ghost"
         asChild
-        className="mb-6 -ml-4 text-muted-foreground hover:text-primary transition-colors"
+        className="mb-6 ml-0 md:-ml-4 text-muted-foreground hover:text-primary transition-colors"
       >
         <Link href="/products">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Kembali Belanja
+          <ArrowLeft className="mr-0 md:mr-2 h-4 w-4" /> Kembali Belanja
         </Link>
       </Button>
 
@@ -94,7 +94,7 @@ export default async function OrdersPage() {
 
             return (
               <Link key={order.id} href={`/orders/${order.id}`}>
-                <Card className="group hover:border-primary/50 transition-all duration-300 rounded-3xl overflow-hidden border-gray-100 shadow-sm">
+                <Card className="group hover:border-primary/50 py-0 transition-all duration-300 rounded-3xl overflow-hidden border-gray-100 shadow-sm">
                   <CardContent className="p-0">
                     <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="space-y-1">

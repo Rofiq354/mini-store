@@ -11,6 +11,8 @@ import { LayoutGrid, List, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useRouter, useSearchParams } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { useViewStore } from "@/store/useViewStore";
 
 interface ProductSortHeaderProps {
   totalProducts: number;
@@ -19,14 +21,15 @@ interface ProductSortHeaderProps {
 export function ProductSortHeader({ totalProducts }: ProductSortHeaderProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  const handleSortChange = (value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("sort", value);
-    router.push(`/products?${params.toString()}`, { scroll: false });
-  };
+  const { view, setView } = useViewStore();
 
   const currentSort = searchParams.get("sort") || "terbaru";
+
+  const updateParams = (key: string, value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set(key, value);
+    router.push(`/products?${params.toString()}`, { scroll: false });
+  };
 
   return (
     <div className="flex flex-col sm:flex-row justify-between items-end gap-4 mb-6 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
@@ -42,24 +45,46 @@ export function ProductSortHeader({ totalProducts }: ProductSortHeaderProps) {
       </div>
 
       <div className="flex items-end gap-4 w-full sm:w-auto">
+        {/* VIEW SWITCHER */}
         <div className="hidden lg:flex items-center border border-gray-100 rounded-xl p-1 bg-gray-50/50">
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 bg-white shadow-sm text-primary rounded-lg"
+            onClick={() => setView("grid")}
+            className={cn(
+              "h-9 w-9 rounded-lg transition-all",
+              view === "grid"
+                ? "bg-white shadow-sm text-primary"
+                : "text-gray-400",
+            )}
           >
             <LayoutGrid className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-400">
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setView("list")}
+            className={cn(
+              "h-9 w-9 rounded-lg transition-all",
+              view === "list"
+                ? "bg-white shadow-sm text-primary"
+                : "text-gray-400",
+            )}
+          >
             <List className="h-4 w-4" />
           </Button>
         </div>
 
+        {/* SORT SELECT */}
         <div className="flex flex-col gap-1.5 flex-1 sm:flex-none">
           <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 ml-1">
             Urutkan Berdasarkan
           </Label>
-          <Select value={currentSort} onValueChange={handleSortChange}>
+          <Select
+            value={currentSort}
+            onValueChange={(v) => updateParams("sort", v)}
+          >
             <SelectTrigger className="w-full sm:w-52 h-10 border-gray-200 focus:ring-primary rounded-xl bg-white text-xs font-medium">
               <div className="flex items-center gap-2">
                 <ArrowUpDown className="h-3 w-3 text-gray-400" />
@@ -67,21 +92,11 @@ export function ProductSortHeader({ totalProducts }: ProductSortHeaderProps) {
               </div>
             </SelectTrigger>
             <SelectContent className="rounded-xl shadow-xl border-gray-100">
-              <SelectItem value="terbaru" className="text-xs">
-                Terbaru
-              </SelectItem>
-              <SelectItem value="terlama" className="text-xs">
-                Terlama
-              </SelectItem>
-              <SelectItem value="termurah" className="text-xs">
-                Harga: Rendah ke Tinggi
-              </SelectItem>
-              <SelectItem value="termahal" className="text-xs">
-                Harga: Tinggi ke Rendah
-              </SelectItem>
-              <SelectItem value="populer" className="text-xs">
-                Paling Populer
-              </SelectItem>
+              <SelectItem value="terbaru">Terbaru</SelectItem>
+              <SelectItem value="terlama">Terlama</SelectItem>
+              <SelectItem value="termurah">Harga: Rendah ke Tinggi</SelectItem>
+              <SelectItem value="termahal">Harga: Tinggi ke Rendah</SelectItem>
+              <SelectItem value="populer">Paling Populer</SelectItem>
             </SelectContent>
           </Select>
         </div>
