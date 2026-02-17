@@ -1,76 +1,25 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShoppingBag, CreditCard, Shield, Loader2 } from "lucide-react";
+import { CreditCard, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useCartStore } from "@/store/useCartStore";
-import { createTransactionFromCart } from "@/services/cart-action";
 import { toast } from "sonner";
 import { formatIDR } from "@/lib/utils";
 
 export function CartSummary() {
   const router = useRouter();
-  // Pastikan useCartStore mengembalikan tipe yang benar
-  const { items, getTotalPrice, clearCart } = useCartStore();
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const { items, getTotalPrice } = useCartStore();
 
-  // Pastikan subtotal selalu angka (number)
   const subtotal: number = getTotalPrice() || 0;
-  const shipping: number = 0; // Free shipping
+  const shipping: number = 0;
   const total: number = subtotal + shipping;
 
-  const handleCheckout = async () => {
+  const handleGoToCheckout = () => {
     if (items.length === 0) return toast.error("Keranjang kosong");
-
-    setIsCheckingOut(true);
-
-    try {
-      // 1. Map items dengan tambahan field 'name' untuk Midtrans
-      const checkoutItems = items.map((item) => ({
-        productId: item.id,
-        quantity: item.quantity,
-        price: item.price,
-        name: item.name,
-      }));
-
-      const res = await createTransactionFromCart(checkoutItems);
-
-      if (res.error) {
-        toast.error(res.error);
-        return;
-      }
-
-      // 2. Munculkan Pop-up Midtrans Snap
-      if (res.success && res.snapToken) {
-        clearCart(true);
-        // @ts-ignore (Snap dari script Midtrans)
-        window.snap.pay(res.snapToken, {
-          onSuccess: function (midtransData: any) {
-            console.log("Midtrans callback data:", midtransData);
-            toast.success("Pembayaran Berhasil!");
-            clearCart(); // Kosongkan keranjang di state/DB
-            router.push(`/orders/${res.transactionId}`);
-          },
-          onPending: function (midtransData: any) {
-            toast.info("Menunggu pembayaran...");
-            router.push(`/orders/${res.transactionId}`);
-          },
-          onError: function (midtransData: any) {
-            toast.error("Pembayaran Gagal!");
-          },
-          onClose: function () {
-            toast.info("Anda menutup jendela pembayaran sebelum selesai.");
-          },
-        });
-      }
-    } catch (error) {
-      toast.error("Gagal memproses pembayaran");
-    } finally {
-      setIsCheckingOut(false);
-    }
+    router.push("/checkout");
   };
 
   return (
@@ -107,23 +56,8 @@ export function CartSummary() {
             </div>
           </div>
 
-          <Button
-            size="lg"
-            className="w-full"
-            disabled={items.length === 0 || isCheckingOut}
-            onClick={handleCheckout}
-          >
-            {isCheckingOut ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Memproses...
-              </>
-            ) : (
-              <>
-                <ShoppingBag className="mr-2 h-5 w-5" />
-                Checkout Sekarang
-              </>
-            )}
+          <Button size="lg" className="w-full" onClick={handleGoToCheckout}>
+            Lanjut ke Checkout
           </Button>
 
           <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">

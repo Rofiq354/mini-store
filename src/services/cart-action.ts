@@ -41,14 +41,12 @@ export async function getProductForCart(productId: string) {
     };
   }
 
-  // Check if product is available
   if (!product.is_active) {
     return {
       error: "Produk tidak tersedia",
     };
   }
 
-  // Access first element since Supabase returns relations as arrays
   const merchant = Array.isArray(product.profiles)
     ? product.profiles[0]
     : product.profiles;
@@ -56,7 +54,6 @@ export async function getProductForCart(productId: string) {
     ? product.categories[0]
     : product.categories;
 
-  // Format response
   return {
     data: {
       id: product.id,
@@ -142,18 +139,17 @@ export async function createTransactionFromCart(
     productId: string;
     quantity: number;
     price: number;
-    name: string; // Tambahkan name untuk detail Midtrans
+    name: string;
   }[],
 ) {
   const supabase = await createClient();
 
-  // 1. Cek Auth
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Anda harus login untuk checkout" };
 
-  // 2. Ambil merchant_id (Asumsi 1 checkout = 1 merchant sesuai diskusi)
+  // Ambil merchant_id (Asumsi 1 checkout = 1 merchant sesuai diskusi)
   const { data: productData } = await supabase
     .from("products")
     .select("merchant_id")
@@ -162,7 +158,6 @@ export async function createTransactionFromCart(
 
   if (!productData) return { error: "Produk tidak ditemukan" };
 
-  // 3. Persiapan ID Unik & Total Harga
   const externalId = `TRX-${nanoid(10).toUpperCase()}`;
   const totalPrice = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -170,7 +165,7 @@ export async function createTransactionFromCart(
   );
 
   try {
-    // 4. INSERT TRANSACTION (Status Awal: Pending)
+    // INSERT TRANSACTION (Status Awal: Pending)
     const { data: transaction, error: txError } = await supabase
       .from("transactions")
       .insert({
@@ -178,7 +173,7 @@ export async function createTransactionFromCart(
         user_id: user.id,
         merchant_id: productData.merchant_id,
         total_price: totalPrice,
-        status: "pending", // Sesuai Enum kita
+        status: "pending",
       })
       .select()
       .single();
@@ -186,7 +181,7 @@ export async function createTransactionFromCart(
     if (txError || !transaction)
       throw new Error("Gagal membuat transaksi di database");
 
-    // 5. INSERT TRANSACTION ITEMS
+    // INSERT TRANSACTION ITEMS
     const transactionItemsData = items.map((item) => ({
       transaction_id: transaction.id,
       product_id: item.productId,
@@ -201,7 +196,7 @@ export async function createTransactionFromCart(
 
     if (itemsError) throw itemsError;
 
-    // 6. HIT MIDTRANS API
+    // HIT MIDTRANS API
     const parameter = {
       transaction_details: {
         order_id: externalId,
@@ -224,13 +219,13 @@ export async function createTransactionFromCart(
 
     const midtransTx = await snap.createTransaction(parameter);
 
-    // 7. UPDATE TRANSACTION DENGAN SNAP TOKEN
+    // UPDATE TRANSACTION DENGAN SNAP TOKEN
     await supabase
       .from("transactions")
       .update({ snap_token: midtransTx.token })
       .eq("id", transaction.id);
 
-    // 8. KURANGI STOK (Gunakan RPC agar atomik)
+    // KURANGI STOK (Gunakan RPC agar atomik)
     for (const item of items) {
       await supabase.rpc("decrement_stock", {
         product_id: item.productId,
@@ -241,7 +236,7 @@ export async function createTransactionFromCart(
     return {
       success: true,
       transactionId: transaction.id,
-      snapToken: midtransTx.token, // Kirim token ke Client
+      snapToken: midtransTx.token,
       externalId: externalId,
     };
   } catch (err: any) {

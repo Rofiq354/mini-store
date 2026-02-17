@@ -411,6 +411,8 @@ model users {
   oauth_consents              oauth_consents[]
   one_time_tokens             one_time_tokens[]
   sessions                    sessions[]
+  cart_items                  cart_items[]
+  order_status_history        order_status_history[]
   profiles                    profiles?
 
   @@index([instance_id])
@@ -427,9 +429,15 @@ model products {
   description       String?
   price             Decimal             @db.Decimal(12, 2)
   stock             Int?                @default(0)
-  category          String?
   image_url         String?
   created_at        DateTime?           @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
+  category_id       String?             @db.Uuid
+  cost_price        Decimal?            @default(0) @db.Decimal
+  is_active         Boolean?            @default(true)
+  updated_at        DateTime?           @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
+  cart_items        cart_items[]
+  order_items       order_items[]
+  categories        categories?         @relation(fields: [category_id], references: [id], onUpdate: NoAction)
   profiles          profiles            @relation(fields: [merchant_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   transaction_items transaction_items[]
 
@@ -438,23 +446,32 @@ model products {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model profiles {
-  id               String         @id @db.Uuid
-  full_name        String?
-  email            String?        @unique
-  phone_number     String?
-  avatar_url       String?
-  role             user_role?     @default(customer)
-  shop_name        String?
-  business_address String?
-  updated_at       DateTime?      @default(now()) @db.Timestamptz(6)
-  description      String?
-  is_active        Boolean?       @default(true)
-  is_verified      Boolean?       @default(false)
-  created_at       DateTime?      @default(now()) @db.Timestamptz(6)
-  products         products[]
-  users            users          @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  transactions     transactions[]
+  id                                          String              @id @db.Uuid
+  full_name                                   String?
+  email                                       String?             @unique
+  phone_number                                String?
+  avatar_url                                  String?
+  role                                        user_role?          @default(customer)
+  shop_name                                   String?
+  business_address                            String?
+  updated_at                                  DateTime?           @default(now()) @db.Timestamptz(6)
+  description                                 String?
+  is_active                                   Boolean?            @default(true)
+  is_verified                                 Boolean?            @default(false)
+  created_at                                  DateTime?           @default(now()) @db.Timestamptz(6)
+  shop_slug                                   String?             @unique
+  addresses                                   addresses[]
+  cart_items                                  cart_items[]
+  categories                                  categories[]
+  orders_orders_merchant_idToprofiles         orders[]            @relation("orders_merchant_idToprofiles")
+  orders_orders_user_idToprofiles             orders[]            @relation("orders_user_idToprofiles")
+  products                                    products[]
+  users                                       users               @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  transaction_items                           transaction_items[]
+  transactions                                transactions[]
+  transactions_transactions_user_idToprofiles transactions[]      @relation("transactions_user_idToprofiles")
 
+  @@index([shop_slug], map: "idx_profiles_shop_slug")
   @@schema("public")
 }
 
@@ -466,6 +483,8 @@ model transaction_items {
   product_id     String       @db.Uuid
   quantity       Int
   price_at_time  Decimal      @db.Decimal(12, 2)
+  merchant_id    String?      @db.Uuid
+  profiles       profiles?    @relation(fields: [merchant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   products       products     @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   transactions   transactions @relation(fields: [transaction_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
@@ -475,14 +494,176 @@ model transaction_items {
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model transactions {
-  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  merchant_id       String              @db.Uuid
-  total_price       Decimal             @default(0) @db.Decimal(12, 2)
-  payment_method    String?             @default("cash")
-  created_at        DateTime?           @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
-  transaction_items transaction_items[]
-  profiles          profiles            @relation(fields: [merchant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                                      String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  merchant_id                             String              @db.Uuid
+  total_price                             Decimal             @default(0) @db.Decimal(12, 2)
+  payment_method                          String?             @default("cash")
+  created_at                              DateTime?           @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
+  external_id                             String?             @unique
+  user_id                                 String?             @db.Uuid
+  status                                  transaction_status? @default(pending)
+  snap_token                              String?
+  payment_type                            String?
+  updated_at                              DateTime?           @default(now()) @db.Timestamptz(6)
+  orders                                  orders[]
+  transaction_items                       transaction_items[]
+  profiles                                profiles            @relation(fields: [merchant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  profiles_transactions_user_idToprofiles profiles?           @relation("transactions_user_idToprofiles", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model addresses {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id        String    @db.Uuid
+  label          String?   @default("home") @db.VarChar(50)
+  recipient_name String    @db.VarChar(255)
+  phone_number   String    @db.VarChar(20)
+  province_id    Int
+  province_name  String    @db.VarChar(255)
+  city_id        Int
+  city_name      String    @db.VarChar(255)
+  district       String?   @db.VarChar(255)
+  postal_code    String?   @db.VarChar(10)
+  street_address String
+  notes          String?
+  is_primary     Boolean?  @default(false)
+  created_at     DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime? @default(now()) @db.Timestamptz(6)
+  district_id    Int?
+  district_name  String?   @db.VarChar(255)
+  village_id     Int?
+  village_name   String?   @db.VarChar(255)
+  profiles       profiles  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  orders         orders[]
+
+  @@index([district_id], map: "idx_addresses_district_id")
+  @@index([user_id], map: "idx_addresses_user_id")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model cart_items {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String    @db.Uuid
+  product_id  String    @db.Uuid
+  quantity    Int       @default(1)
+  created_at  DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime? @default(now()) @db.Timestamptz(6)
+  merchant_id String    @db.Uuid
+  profiles    profiles  @relation(fields: [merchant_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  products    products  @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users       users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, product_id], map: "cart_items_user_product_unique")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model categories {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  merchant_id String     @db.Uuid
+  name        String
+  slug        String?
+  profiles    profiles   @relation(fields: [merchant_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  products    products[]
+
+  @@index([slug], map: "idx_categories_slug")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model order_items {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  order_id          String    @db.Uuid
+  product_id        String    @db.Uuid
+  product_name      String    @db.VarChar(255)
+  product_image_url String?
+  quantity          Int
+  price_at_time     Decimal   @db.Decimal(12, 2)
+  subtotal          Decimal   @db.Decimal(12, 2)
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  orders            orders    @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  products          products  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([order_id], map: "idx_order_items_order_id")
+  @@index([product_id], map: "idx_order_items_product_id")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model order_status_history {
+  id         String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  order_id   String             @db.Uuid
+  old_status order_status_type?
+  new_status order_status_type
+  changed_by String?            @db.Uuid
+  notes      String?
+  created_at DateTime?          @default(now()) @db.Timestamptz(6)
+  users      users?             @relation(fields: [changed_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  orders     orders             @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([order_id, created_at(sort: Desc)], map: "idx_order_status_history_order_id")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model orders {
+  id                                    String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  order_number                          String                 @unique @db.VarChar(50)
+  user_id                               String                 @db.Uuid
+  merchant_id                           String                 @db.Uuid
+  transaction_id                        String?                @db.Uuid
+  status                                order_status_type?     @default(pending_payment)
+  payment_method                        payment_method_type
+  delivery_method                       delivery_method_type
+  subtotal                              Decimal                @db.Decimal(12, 2)
+  shipping_cost                         Decimal?               @default(0) @db.Decimal(12, 2)
+  total_price                           Decimal                @db.Decimal(12, 2)
+  address_id                            String?                @db.Uuid
+  shipping_courier                      String?                @db.VarChar(50)
+  shipping_service                      String?                @db.VarChar(100)
+  shipping_etd                          String?                @db.VarChar(50)
+  tracking_number                       String?                @db.VarChar(100)
+  customer_notes                        String?
+  admin_notes                           String?
+  payment_type                          String?                @db.VarChar(50)
+  paid_at                               DateTime?              @db.Timestamptz(6)
+  created_at                            DateTime?              @default(now()) @db.Timestamptz(6)
+  updated_at                            DateTime?              @default(now()) @db.Timestamptz(6)
+  completed_at                          DateTime?              @db.Timestamptz(6)
+  order_items                           order_items[]
+  order_status_history                  order_status_history[]
+  addresses                             addresses?             @relation(fields: [address_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  profiles_orders_merchant_idToprofiles profiles               @relation("orders_merchant_idToprofiles", fields: [merchant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  transactions                          transactions?          @relation(fields: [transaction_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  profiles_orders_user_idToprofiles     profiles               @relation("orders_user_idToprofiles", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([created_at(sort: Desc)], map: "idx_orders_created_at")
+  @@index([merchant_id], map: "idx_orders_merchant_id")
+  @@index([order_number], map: "idx_orders_order_number")
+  @@index([status], map: "idx_orders_status")
+  @@index([user_id], map: "idx_orders_user_id")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model shipping_rates_cache {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  origin_city_id      Int
+  destination_city_id Int
+  weight              Int
+  courier             String    @db.VarChar(50)
+  rates               Json
+  created_at          DateTime? @default(now()) @db.Timestamptz(6)
+  expires_at          DateTime  @db.Timestamptz(6)
+
+  @@unique([origin_city_id, destination_city_id, weight, courier])
+  @@index([expires_at], map: "idx_shipping_rates_expires")
   @@schema("public")
 }
 
@@ -559,6 +740,45 @@ enum one_time_token_type {
 enum user_role {
   merchant
   customer
+
+  @@schema("public")
+}
+
+enum delivery_method_type {
+  delivery
+  pickup
+
+  @@schema("public")
+}
+
+enum order_status_type {
+  pending_payment
+  paid
+  processing
+  ready_to_ship
+  shipped
+  delivered
+  completed
+  cancelled
+  failed
+
+  @@schema("public")
+}
+
+enum payment_method_type {
+  online
+  cod
+  cash_at_store
+
+  @@schema("public")
+}
+
+enum transaction_status {
+  pending
+  settlement
+  expire
+  cancel
+  deny
 
   @@schema("public")
 }

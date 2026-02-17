@@ -9,7 +9,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Home } from "lucide-react";
+import { Home, ListTree } from "lucide-react";
 
 export default async function CategoriesPage() {
   const supabase = await createClient();
@@ -36,7 +36,7 @@ export default async function CategoriesPage() {
           <BreadcrumbItem>
             <BreadcrumbLink
               href="/admin/dashboard"
-              className="flex items-center gap-1"
+              className="flex items-center gap-1.5 transition-colors hover:text-primary"
             >
               <Home className="h-3.5 w-3.5" />
               Dashboard
@@ -44,7 +44,10 @@ export default async function CategoriesPage() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>Categories</BreadcrumbPage>
+            <BreadcrumbPage className="flex items-center gap-1">
+              <ListTree className="h-3.5 w-3.5" />
+              Categories
+            </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -62,7 +65,7 @@ export default async function CategoriesPage() {
       </div>
 
       {/* Content Section */}
-      <div className="bg-card rounded-3xl border shadow-sm overflow-hidden">
+      <div className="bg-card">
         <CategoryTable data={categories || []} />
       </div>
     </div>

@@ -23,15 +23,37 @@ export const signupSchema = z
   });
 
 export const setupShopSchema = z.object({
-  shopName: z.string()
+  shopName: z
+    .string()
     .min(3, "Nama toko minimal 3 karakter")
     .max(50, "Nama toko terlalu panjang"),
-  phoneNumber: z.string()
+  phoneNumber: z
+    .string()
     .min(10, "Nomor WhatsApp minimal 10 digit")
     .regex(/^[0-9]+$/, "Nomor WhatsApp hanya boleh angka saja"),
-  description: z.string()
+  shopSlug: z.string(),
+  description: z
+    .string()
     .min(20, "Deskripsi minimal 20 karakter agar pembeli lebih percaya")
     .max(500, "Deskripsi jangan lebih dari 500 karakter"),
-  address: z.string()
+  address: z
+    .string()
     .min(10, "Alamat lengkap memudahkan kurir menjemput barang"),
+});
+
+export const updateStoreSchema = z.object({
+  shopName: z.string().min(3, "Nama toko minimal 3 karakter"),
+  shopSlug: z
+    .string()
+    .min(3, "Slug minimal 3 karakter")
+    .regex(
+      /^[a-z0-9-]+$/,
+      "Slug hanya boleh huruf kecil, angka, dan tanda strip",
+    ),
+  phoneNumber: z.string().min(10, "Nomor telepon tidak valid"),
+  description: z
+    .string()
+    .max(500, "Deskripsi maksimal 500 karakter")
+    .optional(),
+  address: z.string().min(10, "Alamat harus lengkap").optional(),
 });

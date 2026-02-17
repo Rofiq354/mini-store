@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Store, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function ContinueShopping() {

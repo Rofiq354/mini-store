@@ -1,4 +1,4 @@
-import { getUserOrders } from "@/services/cart-action";
+import { getUserOrders } from "@/services/order-action";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,11 +9,15 @@ import {
   XCircle,
   ArrowLeft,
   Plus,
+  Package,
+  Truck,
+  Store,
 } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { EmptyState } from "@/components/EmptyState";
+import { formatIDR } from "@/lib/utils";
 
 export default async function OrdersPage() {
   const { data: orders, error } = await getUserOrders();
@@ -21,30 +25,52 @@ export default async function OrdersPage() {
   if (error)
     return <div className="p-10 text-center">Gagal memuat pesanan.</div>;
 
+  // Sesuaikan statusConfig dengan status_type yang ada di tabel orders
   const statusConfig = {
-    settlement: {
-      label: "Berhasil",
-      variant: "default",
-      icon: CheckCircle2,
-      class: "bg-green-500 hover:bg-green-600",
-    },
-    pending: {
-      label: "Menunggu",
-      variant: "outline",
+    pending_payment: {
+      label: "Menunggu Pembayaran",
       icon: Clock,
-      class: "border-amber-500 text-amber-600",
+      class: "border-amber-500 text-amber-600 bg-amber-50",
     },
-    expire: {
+    paid: {
+      label: "Dibayar",
+      icon: CheckCircle2,
+      class: "bg-blue-500 text-white",
+    },
+    processing: {
+      label: "Diproses",
+      icon: Package,
+      class: "bg-purple-500 text-white",
+    },
+    ready_to_ship: {
+      label: "Siap Dikirim/Ambil",
+      icon: Store,
+      class: "bg-indigo-500 text-white",
+    },
+    shipped: {
+      label: "Dikirim",
+      icon: Truck,
+      class: "bg-cyan-500 text-white",
+    },
+    delivered: {
+      label: "Diterima",
+      icon: CheckCircle2,
+      class: "bg-green-500 text-white",
+    },
+    completed: {
+      label: "Selesai",
+      icon: CheckCircle2,
+      class: "bg-green-600 text-white",
+    },
+    cancelled: {
+      label: "Dibatalkan",
+      icon: XCircle,
+      class: "bg-red-500 text-white",
+    },
+    failed: {
       label: "Gagal",
-      variant: "destructive",
       icon: XCircle,
-      class: "",
-    },
-    cancel: {
-      label: "Batal",
-      variant: "destructive",
-      icon: XCircle,
-      class: "",
+      class: "bg-gray-500 text-white",
     },
   };
 
@@ -56,7 +82,7 @@ export default async function OrdersPage() {
         className="mb-6 ml-0 md:-ml-4 text-muted-foreground hover:text-primary transition-colors"
       >
         <Link href="/products">
-          <ArrowLeft className="mr-0 md:mr-2 h-4 w-4" /> Kembali Belanja
+          <ArrowLeft className="mr-2 h-4 w-4" /> Kembali Belanja
         </Link>
       </Button>
 
@@ -72,7 +98,7 @@ export default async function OrdersPage() {
         </div>
       </div>
 
-      {orders?.length === 0 ? (
+      {!orders || orders.length === 0 ? (
         <EmptyState
           icon={<ShoppingBag className="h-10 w-10 text-primary" />}
           title="Belum Ada Pesanan"
@@ -86,45 +112,44 @@ export default async function OrdersPage() {
         </EmptyState>
       ) : (
         <div className="grid gap-4">
-          {orders?.map((order) => {
+          {orders.map((order) => {
             const status =
               statusConfig[order.status as keyof typeof statusConfig] ||
-              statusConfig.pending;
+              statusConfig.pending_payment;
             const StatusIcon = status.icon;
 
             return (
               <Link key={order.id} href={`/orders/${order.id}`}>
-                <Card className="group hover:border-primary/50 py-0 transition-all duration-300 rounded-3xl overflow-hidden border-gray-100 shadow-sm">
+                <Card className="group py-0 hover:border-primary/50 transition-all duration-300 rounded-3xl overflow-hidden border-gray-100 shadow-sm">
                   <CardContent className="p-0">
                     <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-mono text-muted-foreground bg-gray-100 px-2 py-0.5 rounded">
-                            {order.external_id}
+                            {order.order_number}
                           </span>
                           <span className="text-xs text-muted-foreground">
-                            {format(
-                              new Date(order.created_at),
-                              "dd MMM yyyy, HH:mm",
-                              { locale: id },
-                            )}
+                            {format(new Date(order.created_at), "dd MMM yyyy", {
+                              locale: id,
+                            })}
                           </span>
                         </div>
                         <h3 className="font-bold text-lg">
                           {order.profiles?.shop_name || "Toko Unnamed"}
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          {order.transaction_items[0]?.count || 0} Produk •
-                          <span className="font-semibold text-foreground ml-1">
-                            Rp{" "}
-                            {Number(order.total_price).toLocaleString("id-ID")}
+                          {order.order_items?.[0]?.product_name}
+                          {order.order_items?.length > 1 &&
+                            ` +${order.order_items.length - 1} produk lainnya`}
+                          <span className="font-semibold text-foreground ml-2">
+                            {formatIDR(order.total_price)}
                           </span>
                         </p>
                       </div>
 
                       <div className="flex items-center justify-between md:justify-end gap-4">
                         <div
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${status.class} ${order.status === "pending" ? "" : "text-white"}`}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${status.class}`}
                         >
                           <StatusIcon className="h-4 w-4" />
                           {status.label}

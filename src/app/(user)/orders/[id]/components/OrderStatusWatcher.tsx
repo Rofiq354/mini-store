@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supbase/client";
+import { toast } from "sonner";
 
 export default function OrderStatusWatcher({ orderId }: { orderId: string }) {
   const router = useRouter();
@@ -13,40 +14,58 @@ export default function OrderStatusWatcher({ orderId }: { orderId: string }) {
     if (!orderId) return;
 
     function connectRealtime() {
-      // Bersihkan jika ada channel yang nyangkut
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
       }
 
       const channel = supabase
-        .channel(`order-room-${orderId}`)
+        .channel(`order-live-monitor-${orderId}`)
         .on(
           "postgres_changes",
           {
             event: "UPDATE",
             schema: "public",
-            table: "transactions",
-            filter: `id=eq.${orderId}`,
+            table: "orders",
+            filter: `id=eq.${orderId}`, // Filter berdasarkan ID order
           },
           (payload) => {
-            console.log("✅ STATUS BERUBAH:", payload.new.status);
-            // Revalidasi data tanpa refresh total jika memungkinkan
+            console.log("🚀 ADMIN UPDATED ORDER:", payload.new.status);
+
+            // Mapping status biar gak muncul text_mentah_dengan_underscore
+            const statusLabels: Record<string, string> = {
+              pending_payment: "Menunggu Pembayaran",
+              paid: "Pembayaran Berhasil",
+              processing: "Sedang Diproses",
+              shipped: "Dalam Pengiriman",
+              delivered: "Pesanan Sampai",
+              completed: "Selesai",
+              cancelled: "Dibatalkan",
+            };
+
+            const currentLabel =
+              statusLabels[payload.new.status] || payload.new.status;
+
+            toast.success(`Update: ${currentLabel}`, {
+              description: "Status pesanan kamu telah diperbarui.",
+              duration: 5000,
+            });
+
             router.refresh();
           },
         )
         .subscribe(async (status) => {
-          console.log(`📡 Realtime Status (${orderId}):`, status);
+          if (status === "SUBSCRIBED") {
+            console.log("✅ Listening to Order:", orderId);
+          }
 
           if (status === "TIMED_OUT") {
-            console.log("🔄 Reconnecting...");
-            setTimeout(connectRealtime, 2000);
+            setTimeout(connectRealtime, 2500);
           }
         });
 
       channelRef.current = channel;
     }
 
-    // Kasih jeda 500ms biar navigasi kelar dulu
     const timer = setTimeout(connectRealtime, 500);
 
     return () => {
@@ -55,7 +74,7 @@ export default function OrderStatusWatcher({ orderId }: { orderId: string }) {
         supabase.removeChannel(channelRef.current);
       }
     };
-  }, [orderId]); // Dependency cuma orderId
+  }, [orderId, router, supabase]);
 
   return null;
 }

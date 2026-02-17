@@ -2,11 +2,11 @@
 
 import {
   LayoutDashboard,
-  Users,
-  Settings,
   Package,
   LogOut,
   ListTree,
+  Truck,
+  Store,
 } from "lucide-react";
 
 import {
@@ -25,19 +25,24 @@ import {
 import { Logo } from "@/components/Logo";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { signout } from "@/services/auth-action";
 
 const items = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Products", url: "/admin/products", icon: Package },
   { title: "Categories", url: "/admin/categories", icon: ListTree },
-  { title: "Users", url: "/admin/users", icon: Users },
-  { title: "Settings", url: "/admin/settings", icon: Settings },
+  { title: "Orders", url: "/admin/orders", icon: Truck },
+  { title: "Stores", url: "/admin/store", icon: Store },
 ];
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
+
+  const handleLogout = async () => {
+    await signout();
+  };
 
   return (
     <Sidebar variant="sidebar" collapsible="icon" className="border-r">
@@ -92,7 +97,10 @@ export function AdminSidebar() {
         {" "}
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton className="w-full h-10 px-4 text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors">
+            <SidebarMenuButton
+              onClick={handleLogout}
+              className="w-full h-10 px-4 text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors"
+            >
               <LogOut className="size-5" />
               <span className="font-medium">Logout</span>
             </SidebarMenuButton>

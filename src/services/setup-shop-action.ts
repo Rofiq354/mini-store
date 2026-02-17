@@ -18,6 +18,7 @@ export async function setupShop(prevState: any, formData: FormData) {
 
   const rawData = {
     shopName: formData.get("shop-name"),
+    shopSlug: formData.get("shop-slug"),
     phoneNumber: formData.get("phone-number"),
     description: formData.get("description"),
     address: formData.get("address"),
@@ -31,20 +32,25 @@ export async function setupShop(prevState: any, formData: FormData) {
     };
   }
 
-  const { shopName, phoneNumber, description, address } = validatedFields.data;
+  const { shopName, shopSlug, phoneNumber, description, address } =
+    validatedFields.data;
 
   try {
     await prisma.profiles.update({
       where: { id: user.id },
       data: {
         shop_name: shopName,
+        shop_slug: shopSlug,
         phone_number: phoneNumber,
         description: description,
         business_address: address,
-        role: "merchant", // Memastikan role-nya terupdate
+        role: "merchant",
       },
     });
-  } catch (error) {
+  } catch (error: any) {
+    if (error.code === "P2002") {
+      return { message: "Slug toko sudah digunakan, cari nama lain." };
+    }
     return { message: "Database error: Gagal menyimpan profil toko." };
   }
 
