@@ -21,6 +21,7 @@ interface CartStore {
 
   addItem: (product: Omit<CartItem, "quantity">, quantity?: number) => void;
   setItems: (items: CartItem[]) => void;
+  getItemQuantity: (productId: string) => number;
   updateQuantity: (productId: string, quantity: number) => void;
   removeItem: (productId: string) => void;
   clearCart: (shouldSyncWithDb?: boolean) => void;

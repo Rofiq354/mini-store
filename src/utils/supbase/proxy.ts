@@ -54,7 +54,15 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  await supabase.auth.getUser();
+  try {
+    const { data, error } = await supabase.auth.getUser();
+
+    if (error) {
+      console.warn("User session expired, but it's okay.");
+    }
+  } catch (err) {
+    console.log("Supabase session refresh handled (silent).");
+  }
 
   return response;
 }
