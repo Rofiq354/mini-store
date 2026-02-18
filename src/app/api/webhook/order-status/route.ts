@@ -43,6 +43,9 @@ export async function POST(req: Request) {
       );
     }
 
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL || "https://geraiku-mar.vercel.app";
+
     const statusLabels: Record<string, string> = {
       pending_payment: "Menunggu Pembayaran",
       paid: "Pembayaran Diterima",
@@ -98,7 +101,7 @@ export async function POST(req: Request) {
               </table>
 
               <div style="text-align: center; margin-top: 40px;">
-                <a href="https://domain-kamu.com/orders/${record.id}" 
+                <a href="${siteUrl}/orders/${record.id}" 
                   style="background-color: #2563eb; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block;">
                   Lihat Detail Pesanan
                 </a>
