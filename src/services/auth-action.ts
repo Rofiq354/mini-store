@@ -37,7 +37,7 @@ export async function login(prevState: any, formData: FormData) {
   revalidatePath("/", "layout");
 
   if (userRole === "merchant") {
-    redirect("/admin/products");
+    redirect("/admin/dashboard");
   } else {
     redirect("/");
   }

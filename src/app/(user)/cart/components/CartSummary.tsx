@@ -11,11 +11,12 @@ import { formatIDR } from "@/lib/utils";
 
 export function CartSummary() {
   const router = useRouter();
-  const { items, getTotalPrice } = useCartStore();
+  const items = useCartStore((state) => state.items);
+  const totalPrice = useCartStore((state) => state.totalPrice);
+  const totalItems = useCartStore((state) => state.totalItems);
 
-  const subtotal: number = getTotalPrice() || 0;
-  const shipping: number = 0;
-  const total: number = subtotal + shipping;
+  const shipping = 0;
+  const total = totalPrice + shipping;
 
   const handleGoToCheckout = () => {
     if (items.length === 0) return toast.error("Keranjang kosong");
@@ -32,7 +33,7 @@ export function CartSummary() {
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Subtotal</span>
-              <span className="font-medium">{formatIDR(subtotal)}</span>
+              <span className="font-medium">{formatIDR(totalPrice)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Ongkir</span>
@@ -67,7 +68,7 @@ export function CartSummary() {
         </CardContent>
       </Card>
 
-      <Card className="border-dashed bg-muted/50">
+      <Card className="border-dashed bg-muted/50 py-0">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">

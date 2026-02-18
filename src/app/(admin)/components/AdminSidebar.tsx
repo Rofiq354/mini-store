@@ -28,7 +28,7 @@ import Link from "next/link";
 import { signout } from "@/services/auth-action";
 
 const items = [
-  { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
   { title: "Products", url: "/admin/products", icon: Package },
   { title: "Categories", url: "/admin/categories", icon: ListTree },
   { title: "Orders", url: "/admin/orders", icon: Truck },

@@ -16,115 +16,119 @@ export interface CartItem {
 
 interface CartStore {
   items: CartItem[];
+  totalPrice: number;
+  totalItems: number;
 
-  // Actions
   addItem: (product: Omit<CartItem, "quantity">, quantity?: number) => void;
   setItems: (items: CartItem[]) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   removeItem: (productId: string) => void;
   clearCart: (shouldSyncWithDb?: boolean) => void;
 
-  // Computed values
+  // Fungsi pembantu tetap ada jika dibutuhkan
   getTotalItems: () => number;
   getTotalPrice: () => number;
-  getItemQuantity: (productId: string) => number;
 }
+
+const calculateTotals = (items: CartItem[]) => {
+  const totalPrice = items.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0,
+  );
+  const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
+  return { totalPrice, totalItems };
+};
 
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
+      totalPrice: 0,
+      totalItems: 0,
 
-      setItems: (newItems) => set({ items: newItems }),
+      setItems: (newItems) => {
+        set({
+          items: newItems,
+          ...calculateTotals(newItems),
+        });
+      },
 
       addItem: (product, quantity = 1) => {
-        set((state) => {
-          const existingItem = state.items.find(
-            (item) => item.id === product.id,
+        const state = get();
+        const existingItem = state.items.find((item) => item.id === product.id);
+        let newItems;
+
+        if (existingItem) {
+          const newQuantity = existingItem.quantity + quantity;
+          if (newQuantity > product.stock) return;
+          newItems = state.items.map((item) =>
+            item.id === product.id ? { ...item, quantity: newQuantity } : item,
           );
-          let newItems;
+        } else {
+          if (quantity > product.stock) return;
+          newItems = [...state.items, { ...product, quantity }];
+        }
 
-          if (existingItem) {
-            const newQuantity = existingItem.quantity + quantity;
-            if (newQuantity > product.stock) return state; // Handle stock di UI
-            newItems = state.items.map((item) =>
-              item.id === product.id
-                ? { ...item, quantity: newQuantity }
-                : item,
-            );
-          } else {
-            if (quantity > product.stock) return state;
-            newItems = [...state.items, { ...product, quantity }];
-          }
+        // Sync DB
+        const targetQty =
+          newItems.find((i) => i.id === product.id)?.quantity || 0;
+        upsertCartDb(product.id, product.merchant_id, targetQty);
 
-          // SYNC KE DATABASE (Background)
-          const targetQty =
-            newItems.find((i) => i.id === product.id)?.quantity || 0;
-          upsertCartDb(product.id, product.merchant_id, targetQty);
-
-          return { items: newItems };
+        set({
+          items: newItems,
+          ...calculateTotals(newItems),
         });
       },
 
       updateQuantity: (productId, quantity) => {
-        set((state) => {
-          const item = state.items.find((i) => i.id === productId);
-          if (!item) return state;
+        const state = get();
+        const item = state.items.find((i) => i.id === productId);
+        if (!item) return;
 
-          if (quantity <= 0) {
-            removeFromCartDb(productId); // SYNC DELETE
-            return { items: state.items.filter((i) => i.id !== productId) };
-          }
+        if (quantity <= 0) {
+          get().removeItem(productId);
+          return;
+        }
 
-          if (quantity > item.stock) return state;
+        if (quantity > item.stock) return;
 
-          // SYNC UPDATE
-          upsertCartDb(productId, item.merchant_id, quantity);
+        const newItems = state.items.map((i) =>
+          i.id === productId ? { ...i, quantity } : i,
+        );
 
-          return {
-            items: state.items.map((i) =>
-              i.id === productId ? { ...i, quantity } : i,
-            ),
-          };
+        upsertCartDb(productId, item.merchant_id, quantity);
+
+        set({
+          items: newItems,
+          ...calculateTotals(newItems),
         });
       },
 
       removeItem: (productId) => {
-        set((state) => {
-          removeFromCartDb(productId); // SYNC DELETE
-          return { items: state.items.filter((item) => item.id !== productId) };
+        const state = get();
+        const newItems = state.items.filter((item) => item.id !== productId);
+
+        removeFromCartDb(productId);
+
+        set({
+          items: newItems,
+          ...calculateTotals(newItems),
         });
       },
 
       clearCart: async (shouldSyncWithDb = false) => {
-        set({ items: [] });
-
-        if (shouldSyncWithDb) {
-          await removeFromCartDb();
-        }
+        set({ items: [], totalPrice: 0, totalItems: 0 });
+        if (shouldSyncWithDb) await removeFromCartDb();
       },
 
-      getTotalItems: () => {
-        const state = get();
-        return state.items.reduce((total, item) => total + item.quantity, 0);
-      },
-
-      getTotalPrice: () => {
-        const state = get();
-        return state.items.reduce(
-          (total, item) => total + item.price * item.quantity,
-          0,
-        );
-      },
-
-      getItemQuantity: (productId) => {
-        const state = get();
-        const item = state.items.find((item) => item.id === productId);
-        return item?.quantity || 0;
-      },
+      // Getter tetap dipertahankan untuk backward compatibility
+      getTotalItems: () => calculateTotals(get().items).totalItems,
+      getTotalPrice: () => calculateTotals(get().items).totalPrice,
+      getItemQuantity: (productId: string) =>
+        get().items.find((i) => i.id === productId)?.quantity || 0,
     }),
     {
-      name: "geraiku-cart-storage", // localStorage key
+      name: "geraiku-cart-storage",
       skipHydration: true,
     },
   ),
