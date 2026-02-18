@@ -35,9 +35,9 @@ export function ProductCard({
   const isProducts = context === "products";
 
   return (
-    <Card className="group overflow-hidden py-0 gap-2 border-none shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col rounded-2xl bg-white h-full">
-      <Link href={`/products/${product.id}`} className="block p-3">
-        <div className="relative aspect-square overflow-hidden rounded-2xl bg-gray-50 border border-gray-50 shadow-inner">
+    <Card className="group overflow-hidden py-0 gap-0 border-none shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col rounded-2xl bg-white h-full">
+      <Link href={`/products/${product.id}`} className="block p-2 sm:p-3">
+        <div className="relative aspect-square overflow-hidden rounded-xl bg-gray-50 border border-gray-50 shadow-inner">
           {product.image_url ? (
             <Image
               src={product.image_url}
@@ -53,10 +53,10 @@ export function ProductCard({
           )}
 
           {(isLanding || isProducts) && product.categories?.name && (
-            <div className="absolute top-3 left-3">
+            <div className="absolute top-2 left-2">
               <Badge
                 variant="secondary"
-                className="bg-background/95 backdrop-blur-sm text-foreground shadow-sm font-bold text-[10px] uppercase"
+                className="bg-background/95 backdrop-blur-sm text-foreground shadow-sm font-bold text-[9px] uppercase"
               >
                 {product.categories.name}
               </Badge>
@@ -64,10 +64,10 @@ export function ProductCard({
           )}
 
           {product.stock <= 10 && product.stock > 0 && (
-            <div className="absolute top-3 right-3">
+            <div className="absolute top-2 right-2">
               <Badge
                 variant="destructive"
-                className="bg-primary text-white font-bold text-[10px]"
+                className="bg-primary text-white font-bold text-[9px]"
               >
                 Stok {product.stock}
               </Badge>
@@ -78,7 +78,7 @@ export function ProductCard({
             <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] flex items-center justify-center z-10">
               <Badge
                 variant="secondary"
-                className="bg-white text-foreground font-bold text-[10px] py-0.5"
+                className="bg-white text-foreground font-bold text-[9px] py-0.5"
               >
                 Habis
               </Badge>
@@ -87,14 +87,14 @@ export function ProductCard({
         </div>
       </Link>
 
-      <CardHeader className="p-4 pb-0 xs:py-0 sm:p-4 sm:pb-0 grow xs:gap-0 sm:gap-2">
+      <CardHeader className="p-2 pb-0 sm:p-4 sm:pb-0 grow gap-0.5 sm:gap-2">
         {!isMerchant && (
           <Link
             href={`/stores/${product.profiles?.shop_slug}`}
-            className="flex items-center gap-1.5 mb-1.5 text-primary/80 font-bold hover:text-primary transition-colors w-fit group/store"
+            className="flex items-center gap-1 mb-1 text-primary/80 font-bold hover:text-primary transition-colors w-fit group/store"
           >
-            <Store className="h-3 w-3" />
-            <span className="text-[10px] uppercase tracking-widest truncate max-w-35 group-hover/store:underline decoration-primary/30 underline-offset-2">
+            <Store className="h-3 w-3 shrink-0" />
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-widest truncate max-w-25 sm:max-w-35 group-hover/store:underline decoration-primary/30 underline-offset-2">
               {product.profiles?.shop_name ||
                 product.store_name ||
                 "Toko Lokal"}
@@ -104,31 +104,31 @@ export function ProductCard({
 
         <Link
           href={`/products/${product.id}`}
-          className="group-hover:text-primary transition-colors block mb-1"
+          className="group-hover:text-primary transition-colors block"
         >
-          <h3 className="font-bold text-[15px] capitalize leading-snug line-clamp-2 text-gray-800">
+          <h3 className="font-bold text-[13px] sm:text-[15px] capitalize leading-snug line-clamp-2 text-gray-800">
             {product.name}
           </h3>
         </Link>
 
         {isMerchant && (
-          <p className="text-[11px] text-gray-400 line-clamp-2 leading-relaxed mt-1">
+          <p className="text-[10px] sm:text-[11px] text-gray-400 line-clamp-1 sm:line-clamp-2 leading-relaxed mt-0.5">
             {product.description ||
               "Produk lokal berkualitas unggul dari GeraiKu."}
           </p>
         )}
       </CardHeader>
 
-      <CardContent className="p-4 xs:py-0 sm:py-4">
-        <div className="flex items-baseline gap-1">
-          <span className="text-xs font-black text-primary">Rp</span>
-          <span className="text-2xl font-black text-primary tracking-tight">
+      <CardContent className="p-2 pt-1 sm:p-4 sm:pt-2">
+        <div className="flex items-baseline gap-0.5">
+          <span className="text-[10px] font-black text-primary">Rp</span>
+          <span className="text-lg sm:text-2xl font-black text-primary tracking-tight">
             {product.price.toLocaleString("id-ID")}
           </span>
         </div>
       </CardContent>
 
-      <CardFooter className="p-4 pt-0 mt-auto">
+      <CardFooter className="p-2 pt-0 sm:p-4 sm:pt-0 mt-auto">
         <AddToCartButton
           product={{
             id: product.id,
@@ -140,8 +140,8 @@ export function ProductCard({
             merchant_name:
               product.store_name || product.profiles?.shop_name || "Toko",
           }}
-          size="lg"
-          className="w-full shadow-sm active:scale-95 transition-transform"
+          size="sm"
+          className="w-full shadow-sm active:scale-95 transition-transform text-xs sm:text-sm sm:h-10 h-8"
         />
       </CardFooter>
     </Card>

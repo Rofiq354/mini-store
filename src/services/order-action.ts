@@ -144,6 +144,11 @@ export async function createOrder(params: CreateOrderParams) {
             user.user_metadata?.full_name || user.email?.split("@")[0],
           email: user.email,
         },
+        callbacks: {
+          finish: `${process.env.NEXT_PUBLIC_APP_URL}/orders/${orderNumber}`,
+          error: `${process.env.NEXT_PUBLIC_APP_URL}/orders`,
+          pending: `${process.env.NEXT_PUBLIC_APP_URL}/orders`,
+        },
       };
 
       const midtransTx = await snap.createTransaction(midtransParams);

@@ -20,52 +20,89 @@ export default async function StoreDetailPage({
   const productCount = products?.length || 0;
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 pt-16 pb-8 md:py-8">
-      <div className="relative mb-10 overflow-hidden rounded-[2rem] border bg-background p-8 shadow-sm">
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-          <Avatar className="h-24 w-24 border-4 border-background shadow-xl md:h-32 md:w-32">
-            <AvatarImage src={store.avatar_url} alt={store.shop_name} />
-            <AvatarFallback className="text-2xl bg-primary/5 text-primary">
-              {store.shop_name?.substring(0, 2).toUpperCase() || "ST"}
-            </AvatarFallback>
-          </Avatar>
+    <div className="container mx-auto max-w-7xl px-4 pt-14 pb-10 md:py-8">
+      {/* Store Hero Card */}
+      <div className="relative mb-10 overflow-hidden rounded-2xl lg:rounded-[2rem] border bg-background shadow-sm">
+        {/* Background decorative gradient */}
+        <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-background to-primary/10 pointer-events-none" />
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-linear-to-r from-primary/40 via-primary to-primary/40" />
 
-          <div className="flex-1 space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">
-              {store.shop_name || store.full_name}
-            </h1>
-            <p className="text-muted-foreground max-w-2xl text-sm md:text-base">
-              {store.description || "Selamat datang di gerai resmi kami."}
-            </p>
+        <div className="relative p-5 sm:p-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+            {/* Avatar */}
+            <div className="relative shrink-0">
+              <Avatar className="h-20 w-20 sm:h-28 sm:w-28 border-4 border-background shadow-xl">
+                <AvatarImage src={store.avatar_url} alt={store.shop_name} />
+                <AvatarFallback className="text-2xl bg-primary/10 text-primary font-bold">
+                  {store.shop_name?.substring(0, 2).toUpperCase() || "ST"}
+                </AvatarFallback>
+              </Avatar>
+              <span className="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-green-400 border-2 border-background shadow-sm" />
+            </div>
 
-            <div className="flex flex-wrap gap-4 pt-2 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <MapPin className="h-4 w-4 text-primary" />
-                {store.business_address || "Lokasi tidak dicantumkan"}
+            {/* Info */}
+            <div className="flex-1 min-w-0 space-y-2">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-0.5">
+                  Gerai Resmi
+                </p>
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">
+                  {store.shop_name || store.full_name}
+                </h1>
               </div>
-              <div className="flex items-center gap-1.5">
-                <Package className="h-4 w-4 text-primary" />
-                {productCount} Produk
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Calendar className="h-4 w-4 text-primary" />
-                Bergabung{" "}
-                {store.created_at
-                  ? new Date(store.created_at).toLocaleDateString("id-ID", {
-                      month: "long",
-                      year: "numeric",
-                    })
-                  : "-"}
+
+              <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 max-w-2xl">
+                {store.description || "Selamat datang di gerai resmi kami."}
+              </p>
+
+              {/* Stats row */}
+              <div className="flex flex-wrap gap-x-4 gap-y-2 pt-1 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+                    <MapPin className="h-3 w-3 text-primary" />
+                  </div>
+                  <span className="truncate max-w-45">
+                    {store.business_address || "Lokasi tidak dicantumkan"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Package className="h-3 w-3 text-primary" />
+                  </div>
+                  <span>{productCount} Produk</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Calendar className="h-3 w-3 text-primary" />
+                  </div>
+                  <span>
+                    Bergabung{" "}
+                    {store.created_at
+                      ? new Date(store.created_at).toLocaleDateString("id-ID", {
+                          month: "long",
+                          year: "numeric",
+                        })
+                      : "-"}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold tracking-tight">Produk Gerai</h2>
-          <div className="h-px flex-1 mx-4 bg-border hidden sm:block" />
+      {/* Products Section */}
+      <div className="space-y-5">
+        <div className="flex items-center gap-3">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight whitespace-nowrap">
+            Produk Gerai
+          </h2>
+          <div className="h-px flex-1 bg-border" />
+          {productCount > 0 && (
+            <span className="text-xs font-semibold text-muted-foreground bg-muted px-2.5 py-1 rounded-full whitespace-nowrap">
+              {productCount} item
+            </span>
+          )}
         </div>
 
         {productCount === 0 ? (
@@ -75,7 +112,7 @@ export default async function StoreDetailPage({
             description={`Sepertinya ${store.shop_name || "penjual"} belum mengunggah produk ke gerai ini.`}
           />
         ) : (
-          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {products?.map((product: any) => (
               <ProductCard
                 key={product.id}

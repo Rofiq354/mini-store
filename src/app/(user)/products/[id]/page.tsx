@@ -4,12 +4,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import {
-  Store,
-  Package,
-  ShieldCheck,
-  ArrowLeft,
-} from "lucide-react";
+import { Store, Package, ShieldCheck, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Image from "next/image";
@@ -33,64 +28,72 @@ export default async function ProductDetailPage({
   const filteredRelated = relatedProducts.filter((p: any) => p.id !== id);
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 pt-16 pb-8 md:py-8">
+    <div className="container mx-auto max-w-7xl px-4 pt-14 pb-8 md:py-8">
       <Button
         variant="ghost"
         asChild
-        className="mb-6 ml-0 lg:-ml-4 text-muted-foreground hover:text-primary transition-colors"
+        className="mb-4 ml-0 lg:-ml-4 text-muted-foreground hover:text-primary transition-colors"
       >
         <Link href="/products">
           <ArrowLeft className="mr-2 h-4 w-4" /> Kembali
         </Link>
       </Button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        <div className="relative aspect-square overflow-hidden rounded-[2rem] border bg-white">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12">
+        {/* Image */}
+        <div className="relative aspect-square overflow-hidden rounded-2xl lg:rounded-[2rem] border bg-white">
           <Image
             src={product.image_url || "/placeholder-product.jpg"}
             alt={product.name}
             fill
-            className="object-contain p-8"
+            className="object-contain p-6 lg:p-8"
             priority
           />
         </div>
 
-        <div className="flex flex-col space-y-6">
-          <div className="space-y-2">
+        {/* Detail */}
+        <div className="flex flex-col space-y-4 lg:space-y-6">
+          <div className="space-y-1.5">
             <Badge variant="secondary" className="rounded-full">
               {product.categories?.name}
             </Badge>
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-gray-900">
               {product.name}
             </h1>
           </div>
 
-          <div className="text-3xl font-bold text-primary">
+          <div className="text-2xl lg:text-3xl font-bold text-primary">
             Rp {Number(product.price).toLocaleString("id-ID")}
           </div>
 
           <Separator />
 
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Deskripsi Produk</h3>
-            <p className="text-muted-foreground leading-relaxed">
+          <div className="space-y-2">
+            <h3 className="font-semibold text-base lg:text-lg">
+              Deskripsi Produk
+            </h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
               {product.description || "Tidak ada deskripsi untuk produk ini."}
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 pt-4">
-            <div className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 border">
-              <Package className="h-5 w-5 text-primary" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex items-center gap-2.5 p-3 lg:p-4 rounded-xl bg-gray-50 border">
+              <Package className="h-4 w-4 lg:h-5 lg:w-5 text-primary shrink-0" />
               <div>
-                <p className="text-xs text-muted-foreground">Stok Tersedia</p>
-                <p className="font-bold">{product.stock} Unit</p>
+                <p className="text-[10px] text-muted-foreground">
+                  Stok Tersedia
+                </p>
+                <p className="font-bold text-sm">{product.stock} Unit</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 border">
-              <ShieldCheck className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-2.5 p-3 lg:p-4 rounded-xl bg-gray-50 border">
+              <ShieldCheck className="h-4 w-4 lg:h-5 lg:w-5 text-primary shrink-0" />
               <div>
-                <p className="text-xs text-muted-foreground">Status Produk</p>
-                <p className="font-bold">
+                <p className="text-[10px] text-muted-foreground">
+                  Status Produk
+                </p>
+                <p className="font-bold text-sm">
                   {product.stock > 10
                     ? "Tersedia"
                     : product.stock > 0
@@ -103,21 +106,25 @@ export default async function ProductDetailPage({
 
           <Link
             href={`/stores/${product.profiles?.shop_slug}`}
-            className="group p-4 rounded-2xl border hover:border-primary transition-all"
+            className="group p-3 lg:p-4 rounded-2xl border hover:border-primary transition-all"
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Store className="h-6 w-6 text-primary" />
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 lg:h-12 lg:w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Store className="h-5 w-5 lg:h-6 lg:w-6 text-primary" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Penjual</p>
-                  <p className="font-bold group-hover:underline">
+                  <p className="text-[10px] text-muted-foreground">Penjual</p>
+                  <p className="font-bold text-sm group-hover:underline">
                     {product.profiles?.shop_name}
                   </p>
                 </div>
               </div>
-              <Button variant="outline" size="sm" className="rounded-full">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full text-xs"
+              >
                 Kunjungi Toko
               </Button>
             </div>
@@ -136,15 +143,15 @@ export default async function ProductDetailPage({
             }}
             size="lg"
             buttonLabel="Tambah ke Keranjang"
-            className="w-full h-14 text-lg shadow-lg shadow-primary/20"
+            className="w-full h-12 lg:h-14 text-base lg:text-lg shadow-lg shadow-primary/20"
           />
         </div>
       </div>
 
       {filteredRelated.length > 0 && (
-        <div className="mt-20 space-y-8">
+        <div className="mt-12 lg:mt-20 space-y-6 lg:space-y-8">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Produk Serupa</h2>
+            <h2 className="text-xl lg:text-2xl font-bold">Produk Serupa</h2>
             <Link
               href="/products"
               className="text-primary text-sm font-medium hover:underline"
@@ -152,7 +159,7 @@ export default async function ProductDetailPage({
               Lihat Semua
             </Link>
           </div>
-          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {filteredRelated.map((p: any) => (
               <ProductCard key={p.id} product={p} context="products" />
             ))}

@@ -120,10 +120,14 @@ export default async function OrderDetailPage({
   );
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-8">
+    <div className="container mx-auto max-w-4xl px-4 py-15 md:py-10">
       <OrderStatusWatcher orderId={order.id} />
 
-      <Button variant="ghost" asChild className="mb-6">
+      <Button
+        variant="ghost"
+        asChild
+        className="mb-6 ml-0 md:-ml-4 text-muted-foreground hover:text-primary transition-colors"
+      >
         <Link href="/orders">
           <ArrowLeft className="mr-2 h-4 w-4" /> Kembali ke Pesanan
         </Link>

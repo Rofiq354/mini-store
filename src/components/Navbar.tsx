@@ -13,7 +13,18 @@ export default async function Navbar() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const role = user?.user_metadata?.role;
+  let dbRole = user?.user_metadata?.role;
+
+  if (user && !dbRole) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    dbRole = profile?.role;
+  }
+
+  const isCustomer = dbRole === "customer";
 
   return (
     <nav className="fixed w-full z-50 top-0 bg-background/95 backdrop-blur border-b">
@@ -44,10 +55,10 @@ export default async function Navbar() {
           </div>
 
           <div className="flex items-center gap-2">
-            {user && role === "customer" && <CartBadge />}
+            {user && isCustomer && <CartBadge />}
 
             {user ? (
-              <UserMenu email={user.email} role={role} />
+              <UserMenu email={user.email} role={dbRole} />
             ) : (
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="sm" asChild>

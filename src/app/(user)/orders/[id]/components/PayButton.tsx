@@ -8,11 +8,26 @@ declare global {
 
 import { Button } from "@/components/ui/button";
 import { CreditCard } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function PayButton({ snapToken }: { snapToken: string }) {
+  const router = useRouter();
   const handlePay = () => {
     if (window.snap) {
-      window.snap.pay(snapToken);
+      window.snap.pay(snapToken, {
+        onSuccess: function (result: any) {
+          router.refresh(); // Refresh data order
+        },
+        onPending: function (result: any) {
+          router.refresh();
+        },
+        onError: function (result: any) {
+          router.refresh();
+        },
+        onClose: function () {
+          console.log("User closed the popup without finishing the payment");
+        },
+      });
     }
   };
 

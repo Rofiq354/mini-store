@@ -161,11 +161,11 @@ export default function CheckoutPage() {
   return (
     <div className="container mx-auto max-w-5xl px-4 py-8">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8 px-4 py-8 md:py-10">
         <Button
           variant="ghost"
           onClick={handleBack}
-          className="mb-4 -ml-4 hover:bg-transparent hover:text-primary transition-colors"
+          className="mb-6 ml-0 md:-ml-4 text-muted-foreground hover:text-primary transition-colors"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {step === 1 ? "Kembali ke Keranjang" : "Kembali"}

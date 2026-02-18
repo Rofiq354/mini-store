@@ -76,15 +76,17 @@ export default async function FeaturedCategories() {
               if (cat.isOther) {
                 return (
                   <Link key="others" href="/products">
-                    <Card className="group overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 rounded-3xl bg-muted/50">
-                      <CardContent className="p-6 text-center">
-                        <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-linear-to-br from-gray-500/10 to-gray-500/5 transition-transform duration-300 group-hover:scale-110">
-                          <span className="text-4xl">📦</span>
+                    <Card className="group overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 rounded-2xl md:rounded-3xl bg-muted/50">
+                      <CardContent className="p-4 md:p-6 text-center">
+                        <div className="mx-auto mb-3 md:mb-4 flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-xl md:rounded-2xl bg-linear-to-br from-gray-500/10 to-gray-500/5 transition-transform duration-300 group-hover:scale-110">
+                          <span className="text-3xl md:text-4xl">📦</span>
                         </div>
-                        <h3 className="font-bold text-foreground group-hover:text-primary transition-colors">
+
+                        <h3 className="text-sm md:text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
                           {cat.label}
                         </h3>
-                        <p className="mt-1 text-xs text-primary font-bold uppercase tracking-wider">
+
+                        <p className="mt-1 text-[10px] md:text-xs text-primary font-bold uppercase tracking-wider">
                           {cat.count}+ Kategori
                         </p>
                       </CardContent>
@@ -96,17 +98,21 @@ export default async function FeaturedCategories() {
               const style = categoryStyleMap[cat.id];
               return (
                 <Link key={cat.id} href={`/products?category=${cat.id}`}>
-                  <Card className="group overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 rounded-3xl">
-                    <CardContent className="p-6 text-center">
+                  <Card className="group overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 rounded-2xl md:rounded-3xl">
+                    <CardContent className="p-4 md:p-6 text-center">
                       <div
-                        className={`mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-linear-to-br ${style.color} transition-transform duration-300 group-hover:scale-110`}
+                        className={`mx-auto mb-3 md:mb-4 flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-xl md:rounded-2xl bg-linear-to-br ${style.color} transition-transform duration-300 group-hover:scale-110`}
                       >
-                        <span className="text-4xl">{style.icon}</span>
+                        <span className="text-3xl md:text-4xl">
+                          {style.icon}
+                        </span>
                       </div>
-                      <h3 className="font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
+
+                      <h3 className="text-sm md:text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
                         {cat.label}
                       </h3>
-                      <p className="mt-1 text-xs text-muted-foreground uppercase tracking-wider font-medium">
+
+                      <p className="mt-1 text-[10px] md:text-xs text-muted-foreground uppercase tracking-wider font-medium">
                         Cek Produk
                       </p>
                     </CardContent>

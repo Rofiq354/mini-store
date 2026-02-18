@@ -10,13 +10,21 @@ export function useCartSync() {
   const supabase = createClient();
   const setItems = useCartStore((state) => state.setItems);
 
-  const { data: userData, isLoading: authLoading } = useSWR(
+  const {
+    data: userData,
+    isLoading: authLoading,
+    mutate: mutateAuth,
+  } = useSWR(
     "auth-user",
     async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      return session?.user ?? null;
+      const user = session?.user ?? null;
+      return user;
+    },
+    {
+      revalidateOnMount: true,
     },
   );
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Store, ArrowRight } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
+import { EmptyState } from "@/components/EmptyState";
 import { getProductsAction } from "@/services/product-action";
 
 export default async function ProductList() {
@@ -34,23 +35,22 @@ export default async function ProductList() {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {latestProducts.map((product) => (
-            <ProductCard key={product.id} product={product} context="landing" />
-          ))}
-        </div>
-
-        {/* Empty State */}
-        {latestProducts.length === 0 && (
-          <div className="text-center py-16">
-            <Store className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              Belum Ada Produk
-            </h3>
-            <p className="text-muted-foreground">
-              Tunggu warung-warung lokal menambahkan produk mereka!
-            </p>
+        {latestProducts.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+            {latestProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                context="landing"
+              />
+            ))}
           </div>
+        ) : (
+          <EmptyState
+            icon={<Store className="h-10 w-10 text-primary/60" />}
+            title="Belum Ada Produk"
+            description="Tunggu warung-warung lokal menambahkan produk mereka!"
+          />
         )}
       </div>
     </section>

@@ -31,7 +31,6 @@ export default function OrderStatusWatcher({ orderId }: { orderId: string }) {
           (payload) => {
             console.log("🚀 ADMIN UPDATED ORDER:", payload.new.status);
 
-            // Mapping status biar gak muncul text_mentah_dengan_underscore
             const statusLabels: Record<string, string> = {
               pending_payment: "Menunggu Pembayaran",
               paid: "Pembayaran Berhasil",
