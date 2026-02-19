@@ -9,9 +9,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { User as UserIcon, LogOut, LayoutDashboard } from "lucide-react";
+import {
+  User as UserIcon,
+  LogOut,
+  LayoutDashboard,
+  ShoppingBag,
+  UserCircle,
+} from "lucide-react";
 import { signout } from "@/services/auth-action";
-import { useRouter } from "next/navigation";
 
 interface UserMenuProps {
   email: string | undefined;
@@ -19,18 +24,18 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ email, role }: UserMenuProps) {
-  const router = useRouter();
   const handleLogout = async () => {
     await signout();
   };
 
   return (
     <div className="flex items-center gap-2">
+      {/* Dashboard button: hanya tampil di sm ke atas */}
       {role === "merchant" && (
-        <Button variant="outline" size="sm" asChild>
+        <Button variant="outline" size="sm" asChild className="hidden sm:flex">
           <Link href="/admin/dashboard">
             <LayoutDashboard className="h-4 w-4 mr-2" />
-            <span className="inline">Dashboard</span>
+            Dashboard
           </Link>
         </Button>
       )}
@@ -47,13 +52,32 @@ export function UserMenu({ email, role }: UserMenuProps) {
           </div>
           <DropdownMenuSeparator />
 
+          {/* Dashboard masuk dropdown di mobile */}
+          {role === "merchant" && (
+            <>
+              <DropdownMenuItem asChild className="sm:hidden">
+                <Link href="/admin/dashboard" className="cursor-pointer">
+                  <LayoutDashboard className="h-4 w-4 mr-2" />
+                  Dashboard
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="sm:hidden" />
+            </>
+          )}
+
           {role === "customer" && (
             <>
               <DropdownMenuItem asChild>
-                <Link href="/orders">Pesanan Saya</Link>
+                <Link href="/orders" className="cursor-pointer">
+                  <ShoppingBag className="h-4 w-4 mr-2" />
+                  Pesanan Saya
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/profile">Profil</Link>
+                <Link href="/profile" className="cursor-pointer">
+                  <UserCircle className="h-4 w-4 mr-2" />
+                  Profil
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>

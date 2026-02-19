@@ -128,7 +128,7 @@ export default async function AdminStoreProfilePage() {
                     </div>
                   </div>
                   <div className="p-3 bg-white rounded-lg border text-xs font-mono break-all text-primary underline">
-                    <Link href={`/shop/${store.shop_slug}`} target="_blank">
+                    <Link href={`/stores/${store.shop_slug}`} target="_blank">
                       {siteUrl}/stores/{store.shop_slug}
                     </Link>
                   </div>
